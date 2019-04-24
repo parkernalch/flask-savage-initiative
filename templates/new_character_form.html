@@ -1,0 +1,61 @@
+    <form id="partyMemberForm" name="partyMemberForm" action="/" method=POST data-id={{sessionID}}>
+        <!-- Name Input -->
+        <div class="form-group">
+            <label for="characterNameInput">Character Name</label>
+            <input type="input" class="form-control" id="characterNameInput" aria-describedby="nameHelp" placeholder="Enter Character Name">
+            <small id="nameHelp" class="form-text text-muted">Can be generic, like mook #1</small>
+        </div>
+
+        <label>Edges / Hindrances</label>
+        <!-- Level-Headed -->
+        <div name="levelHeadedDials">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="levelHeadedOptions" id="levelHeaded0" value="0" checked>
+                <label class="form-check-label" for="levelHeaded0">None</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="levelHeadedOptions" id="levelHeaded1" value="1">
+                <label class="form-check-label" for="levelHeaded1">Level-Headed</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="levelHeadedOptions" id="levelHeaded2" value="2">
+                <label class="form-check-label" for="levelHeaded2">Improved Level-Headed</label>
+            </div>
+        </div>
+
+        <!-- Quick / Hesitant -->
+        <div name="quickHesitantDials">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="quickHesitantOptions" id="noQuickHesitant" value="option0" checked>
+                <label class="form-check-label" for="noQuickHesitant">None</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="quickHesitantOptions" id="quickEdge" value="1">
+                <label class="form-check-label" for="quickEdge">Quick</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="quickHesitantOptions" id="hesitantHindrance" value="1">
+                <label class="form-check-label" for="hesitantHindrance">Hesitant</label>
+            </div>
+        </div>
+
+        <!-- Tactician -->
+        <div name="tacticianDials">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="tacticianOptions" id="tactician0" value="0" checked>
+                <label class="form-check-label" for="tactician0">None</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="tacticianOptions" id="tactician1" value="1">
+                <label class="form-check-label" for="tactician1">Tactician</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="tacticianOptions" id="tactician2" value="2">
+                <label class="form-check-label" for="tactician2">Battle Master</label>
+            </div>
+        </div>
+
+        <!-- Add to Initiative -->
+        <!-- <button type="submit" class="btn btn-primary" name="addToInitiativeButton">Add to Initiative</button> -->
+    </form>
+    <button id="AddPartyMember">Add Party Member</button>

@@ -1,0 +1,39 @@
+    <ul class="list-group" name="party" id="party" data-sessionid={{sessionID}}>
+        {% for member in party %}
+        {% if member == party[0] %}
+        <div class="list-group-item">
+        {% endif %}
+
+        {% if member != party[0] %}
+        <div class="list-group-item">
+        {% endif %}
+
+            <div class="d-flex">
+                <h4 class="mb-1">{{member.name}}</h4><br>
+            </div>
+            <button class="edit-character-button" data-charname="{{member.name}}">
+                <i class="fas fa-address-card"></i>
+                Edit Character
+            </button>
+            <a class="ml-5" href="#">
+                <i class="fas fa-chevron-right"></i>
+                View Hand
+            </a>
+
+            {% if member.tactician > 0 %}
+            <a class="ml-5" href="#">
+                <i class="fas fa-chevron-right"></i>
+                Tactician Cards
+            </a>
+            {% endif %}
+
+            {% for card in member.cards.hand %}
+            <div class="p-2">{{card}}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </ul>
+    <button name="startInitiative" id="startInitiative">Start Initiative</button>
+
+    <script>
+    </script>

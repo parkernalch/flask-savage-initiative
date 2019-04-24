@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <title>Savage Initiative</title>
+  </head>
+  <body>
+      <h3>Hello, {{ user }}</h3>
+        <div class="container row">
+            <div class="container col col-6">
+                <form id="partyMemberForm" name="partyMemberForm" action="/" method=POST data-id={{sessionID}}>
+                    <!-- Name Input -->
+                    <div class="form-group">
+                        <label for="characterNameInput">Character Name</label>
+                        <input type="input" class="form-control" id="characterNameInput" aria-describedby="nameHelp" placeholder="Enter Character Name">
+                        <small id="nameHelp" class="form-text text-muted">Can be generic, like mook #1</small>
+                    </div>
+
+                    <label>Edges / Hindrances</label>
+                    <!-- Level-Headed -->
+                    <div name="levelHeadedDials">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="levelHeadedOptions" id="levelHeaded0" value="0" checked>
+                            <label class="form-check-label" for="levelHeaded0">None</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="levelHeadedOptions" id="levelHeaded1" value="1">
+                            <label class="form-check-label" for="levelHeaded1">Level-Headed</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="levelHeadedOptions" id="levelHeaded2" value="2">
+                            <label class="form-check-label" for="levelHeaded2">Improved Level-Headed</label>
+                        </div>
+                    </div>
+
+                    <!-- Quick / Hesitant -->
+                    <div name="quickHesitantDials">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="quickHesitantOptions" id="noQuickHesitant" value="option0" checked>
+                            <label class="form-check-label" for="noQuickHesitant">None</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="quickHesitantOptions" id="quickEdge" value="1">
+                            <label class="form-check-label" for="quickEdge">Quick</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="quickHesitantOptions" id="hesitantHindrance" value="1">
+                            <label class="form-check-label" for="hesitantHindrance">Hesitant</label>
+                        </div>
+                    </div>
+
+                    <!-- Tactician -->
+                    <div name="tacticianDials">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tacticianOptions" id="tactician0" value="0" checked>
+                            <label class="form-check-label" for="tactician0">None</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tacticianOptions" id="tactician1" value="1">
+                            <label class="form-check-label" for="tactician1">Tactician</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tacticianOptions" id="tactician2" value="2">
+                            <label class="form-check-label" for="tactician2">Battle Master</label>
+                        </div>
+                    </div>
+
+                    <!-- Add to Initiative -->
+                    <!-- <button type="submit" class="btn btn-primary" name="addToInitiativeButton">Add to Initiative</button> -->
+                </form>
+                <button id="AddPartyMember">Add Party Member</button>
+            </div>
+            
+            <div class="container col col-6" name="partyList">
+                <h3>PARTY</h3>
+                <br>
+                <ul name="party" id="party">
+                    {% for member in party %}
+                    <div class="d-flex">
+                        <div class="p-2"><a href="#"><i class="fas fa-address-card"></i></a></div>
+                        <div class="p-2" >{{member.name}}</div>
+                        {% for card in member.cards.hand %}
+                        <div class="p-2">{{card}}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </ul>
+                <button name="startInitiative" id="startInitiative">Start Initiative</button>
+            </div>
+        </div>
+    
+    
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static',filename='scripts/home.js') }}"></script>
+</body>
+</html>
