@@ -45,8 +45,10 @@ party = BuildParty(party)
 
 dbdict = {
     # 'sessionID': { 'username': uname, 'party': [<characters>] }
-    'e172f1e1-0386-4b98-bf48-80df84573635': {'username': 'parkernalch', 'party': party }
-    # 'tables': { 'tableID': Initiative }
+    'e172f1e1-0386-4b98-bf48-80df84573635': {'username': 'parkernalch', 'party': party, 'tables': [] },
+    'tables': {
+        # 'tableID': Initiative
+    }
 }
 
 @app.route('/', methods=['GET', 'POST'])
@@ -111,20 +113,10 @@ def GetPartyMember(id, name):
 @app.route('/<id>/party/<name>', methods=['POST'])
 def SetPartyMember(id, name):
     if id not in dbdict.keys():
+        print('id not in dictionary')
         return
     
     newchar = request.get_json()
-    print(newchar)
-    # jsonFormat = {
-    #     oldchar: oldcharname,
-    #     newchar: {
-    #         name: name,
-    #         tactician: tactician,
-    #         level_headed: level_headed,
-    #         quick: quick,
-    #         hesitant: hesitant
-    #     }
-    # }
 
     for character in dbdict[id]['party']:
         if character.name.replace(' ','-').lower() == name:
@@ -134,7 +126,10 @@ def SetPartyMember(id, name):
             character.quick = newchar['quick']
             character.hesitant = newchar['hesitant']
             return jsonify(character.Get())
-    return "No Character Found with the name {}".format(name)
+    
+    newparty = AddMemberTOParty(newchar, dbdict[id]['party'])
+    print(newparty)
+    return jsonify([character.Get() for character in newparty])
 
 @app.route('/cookie', methods=['GET'])
 def cookie():
@@ -154,63 +149,52 @@ def cookie():
     return redirect(url_for('home'))
 
 
-# @app.route('/initiative', methods=['POST', 'GET'])
-# def initiative():
-#     sessionID = request.cookies.get('InitiativeSession')
-#     if not sessionID:
-#         return redirect(url_for('set_cookie'))
+@app.route('/initiative', methods=['GET'])
+def initiative():
+    sessionID = request.cookies.get('InitiativeSession')
+    if not sessionID:
+        return redirect(url_for('set_cookie'))
 
-#     session = dbdict[sessionID]
+    party = dbdict[sessionID]['party']
+    dbdict[sessionID]['initiative'] = Initiative(BuildParty(party))
+    dbdict[sessionID]['initiative'].Start()
+    # req_data = request.get_json()
+    return dbdict[sessionID]['initiative'].State()
 
-#     req_data = request.get_json()
+@app.route('/initiative/next', methods=['GET'])
+def next_round():
+    sessionID = request.cookies.get('InitiativeSession')
+    if 'initiative' not in dbdict[sessionID].keys():
+        return redirect(url_for('initiative'))
 
-#     if 'party' in req_data.keys():
-#         party = req_data['party']
-#         print(party)
-#         return jsonify(Initiative(BuildParty(party)).Start())
-
-#     #print(party)
-#     #return jsonify(Initiative(party))
-#     return 'No Data'
-
-# @app.route('/initiative/next', methods=['POST'])
-# def next_round():
-#     req_data = request.get_json()
-    
-#     party = None
-#     if 'party' in req_data.keys():
-#         party = BuildParty(req_data['party'])
-
-#     deck = None
-#     if 'deck' in req_data.keys():
-#         deck = req_data['deck']
-#         print(deck)
-#         # cards = req_data['deck']['cards']
-#         # nextcard = req_data['deck']['nextCard']
-
-#     if 'round' in req_data.keys():
-#         round = req_data['round']
-
-#     Init = Initiative(party)
-#     return jsonify(Init.NextRound(deck=deck, round=round))    
+    initiative = dbdict[sessionID]['initiative']
+    initiative.NextRound(deck=initiative.deck, round=initiative.round)
+    return dbdict[sessionID]['initiative'].State()  
 
 
-@app.route('/table/<id>', methods=['GET'])
-def JoinTable(id):
-    # renders player-side initiative page
-    return
+# @app.route('/table/<id>', methods=['GET'])
+# def JoinTable(id):
+#     # renders player-side initiative page
+#     return
 
-@app.route('/table/<id>/gamemaster', methods=['GET'])
-def RunTable(id):
-    # renders gm-side initiative page
-    return
+# @app.route('/table/<id>/gamemaster', methods=['GET'])
+# def RunTable(id):
+#     # renders gm-side initiative page
+#     return
 
-@app.route('/tables/create', methods=['POST'])
-def CreateTable():
-    # receives posted complete party
-    # creates a unique ID (probably needs a DB now)
-    # renders the '/table/<id>/gamemaster' link
-    return
+@app.route('/tables', methods=['GET', 'POST'])
+def tables():
+    if request.method == 'POST':
+        tableID = str(uuid.uuid4())
+        while tableID in dbdict['tables'].keys():
+            tableID = str(uuid.uuid4())
+        dbdict['tables'][tableID] = {
+            'initiative': None,
+            'name': 'new table',
+            'members': []
+        }
+        return tableID
+    return jsonify([key for key in dbdict['tables'].keys()])
 
 if __name__ == "__main__":
     app.run()
