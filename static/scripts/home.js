@@ -115,6 +115,9 @@ $(".edit-character-button").on('click', function() {
 
 $("#submit-modal").on('click', function(){
     let oldName = $("#character-modal").attr("data-oldname");
+    if(oldName === ""){
+        oldName = "new character"
+    }
     let charName = $("#modal-charname-input").val();
     let tactLv = $("input[type=radio][name=tacticianOptions]:checked").val() || 0;
     let lvlHead = $("input[type=radio][name=levelHeadedOptions]:checked").val() || 0;
@@ -147,4 +150,34 @@ $("#submit-modal").on('click', function(){
 
     });
 
+});
+
+$("#start-initiative-btn").on("click", function() {
+
+});
+
+$("#new-character-navbutton").on("click", function() {
+    $("#modal-charname-input").val("");
+    $("#levelHeaded0").prop('checked', true)
+    $(".lvlheadlabel0").addClass("active")
+    $("#levelHeaded1").prop('checked', false)
+    $(".lvlheadlabel1").removeClass("active")
+    $("#levelHeaded2").prop('checked', false)
+    $(".lvlheadlabel2").removeClass("active")
+
+    $("#tactician0").prop('checked', true)
+    $(".tactlabel0").addClass("active")
+    $("#tactician1").prop('checked', false)
+    $(".tactlabel1").removeClass("active")
+    $("#tactician2").prop('checked', false)
+    $(".tactlabel2").removeClass("active")
+
+    $("#noQuickHesitant").prop('checked', true)
+    $(".nonelabel").addClass("active")
+    $("#quickEdge").prop('checked', false)
+    $(".quicklabel").removeClass("active")
+    $("#hesitantHindrance").prop('checked', false)
+    $(".hesitantlabel").removeClass("active")
+     
+    $("#character-modal").modal();
 });
