@@ -1,16 +1,16 @@
 $(document).ready(function() {
     console.log('page loaded')
-    $.ajax({
-        type: 'GET',
-        url: '/party',
-        dataType: "html",
-        success: function(response) {
-            $('#page-content').html(response);
-        },
-        error: function(e) {
-            alert('No Party Received');
-        }
-    });
+    // $.ajax({
+    //     type: 'GET',
+    //     url: '/party',
+    //     dataType: "html",
+    //     success: function(response) {
+    //         $('#page-content').html(response);
+    //     },
+    //     error: function(e) {
+    //         alert('No Party Received');
+    //     }
+    // });
 });
 
 $("#startInitiative").on("click", function(){
