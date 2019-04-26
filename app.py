@@ -38,22 +38,42 @@ party = [
     }
 ]
 party = BuildParty(party)
-# I = Initiative(BuildParty(party))
+I = Initiative(party)
 # I.Start()
 
 # tables = []
 
 dbdict = {
     # 'sessionID': { 'username': uname, 'party': [<characters>] }
-    'e172f1e1-0386-4b98-bf48-80df84573635': {'username': 'parkernalch', 'party': party, 'tables': [] },
+    '82abd0e5-f588-4308-ae23-46fc394bb092': {'username': 'parkernalch', 'party': party, 'tables': [] },
     'tables': {
-        # 'tableID': Initiative
+        'hyperion-chronicle-82abd0e5': {
+            'name': 'Hyperion Chronicle',
+            'description': '''
+            An intrepid group of explorers discover and must thwart a dark force that threatens the stability of their worlds.
+            ''',
+            'initiative': I
+        },
+        'skimmers-of-ord-82abd0e5': {
+            'name': 'Skimmers of Ord',
+            'description': '''
+            Fortune-seekers on the world-sea brave dangers both natural and artificial in pursuit of ever-elusive Glimmer.
+            ''',
+            'initiative': I
+        },
+        'cypher-saga-82abd0e5': {
+            'name': 'The Cypher Saga',
+            'description': '''
+            Follow our adventurers through the Ninth World, a strange, alien world built on eons of detritus from aeons past.
+            ''',
+            'initiative': I
+        }
     }
 }
 
 @app.route('/', methods=['GET', 'POST'])
-@app.route('/party', methods=['GET', 'POST'])
 def home():
+    # print('routing party or /')
     sessionID = request.cookies.get('InitiativeSession')
     if not sessionID:
         return redirect(url_for('cookie'))
@@ -65,41 +85,56 @@ def home():
         else:
             party = []
         # return render_template('home.html', party=party, sessionID=sessionID)
-        return render_template('layout.html', party=party, sessionID=sessionID)
+        return render_template('layout.html', party=party, sessionID=sessionID, tableID="")
     else:
         return redirect(url_for('cookie'))
+
+@app.route('/party', methods=['GET'])
+def party():
+    # print('starting /party')
+    sessionID = request.cookies.get('InitiativeSession')
+    if not sessionID:
+        return redirect(url_for('cookie'))
+    if sessionID not in dbdict.keys():
+        return redirect(url_for('cookie'))
+    
+    party = dbdict[sessionID]['party']
+    # print('rendering party list: party={}, sessionID={}'.format([member.name for member in party], sessionID))
+    return render_template('party_list.html', party=party, sessionID=sessionID, tableID="")
 
 @app.route('/<id>/party/add', methods=['POST'])
 def AddPartyMember(id):
     party = dbdict[id]['party']
     request_data = request.get_json()
-    print('dict entry')
-    print(dbdict[id])
-    print('party')
-    for member in party:
-        print(member.name)
-    print('request_data')
-    print(request_data)
+    # print('dict entry')
+    # print(dbdict[id])
+    # print('party')
+    # for member in party:
+        # print(member.name)
+    # print('request_data')
+    # print(request_data)
 
     party = AddMemberTOParty(request_data, party)
 
     dbdict[id]['party'] = party
-    print(dbdict[id])
+    # print(dbdict[id])
     # receives a JSON character object
     # adds character to table <id>
     # returns a JSON party object for table <id>
     party = [character.Get() for character in party]
     response = jsonify(party)
-    return response
+    # return response
+    return redirect('/party')
 
-@app.route('/<id>/party', methods=['GET'])
-def GetParty(id):
-    party = dbdict[id]['party']
-    # returns a JSON party object for table <id>
-    return jsonify([member.Get() for member in party])
+# @app.route('/<id>/party', methods=['GET'])
+# def GetParty(id):
+#     party = dbdict[id]['party']
+#     # returns a JSON party object for table <id>
+#     return jsonify([member.Get() for member in party])
 
 @app.route('/<id>/party/<name>', methods=['GET'])
 def GetPartyMember(id, name):
+    # print('starting GetPartyMember [get]: id={}, name={})'.format(id, name))
     member = {}
     # print(id)
     if id in dbdict.keys():
@@ -112,8 +147,9 @@ def GetPartyMember(id, name):
 
 @app.route('/<id>/party/<name>', methods=['POST'])
 def SetPartyMember(id, name):
+    # print('starting SetPartyMember [get]: id={}, name={})'.format(id, name))
     if id not in dbdict.keys():
-        print('id not in dictionary')
+        # print('id not in dictionary')
         return
     
     newchar = request.get_json()
@@ -125,11 +161,12 @@ def SetPartyMember(id, name):
             character.level_headed = newchar['level_headed']
             character.quick = newchar['quick']
             character.hesitant = newchar['hesitant']
-            return jsonify(character.Get())
+            return redirect('/party')
     
     newparty = AddMemberTOParty(newchar, dbdict[id]['party'])
-    print(newparty)
-    return jsonify([character.Get() for character in newparty])
+    dbdict[id]['party'] = newparty
+    # return jsonify([character.Get() for character in newparty])
+    return redirect('/party')
 
 @app.route('/cookie', methods=['GET'])
 def cookie():
@@ -159,23 +196,35 @@ def initiative():
     dbdict[sessionID]['initiative'] = Initiative(BuildParty(party))
     dbdict[sessionID]['initiative'].Start()
     # req_data = request.get_json()
-    return dbdict[sessionID]['initiative'].State()
-
-@app.route('/initiative/next', methods=['GET'])
-def next_round():
-    sessionID = request.cookies.get('InitiativeSession')
-    if 'initiative' not in dbdict[sessionID].keys():
-        return redirect(url_for('initiative'))
-
-    initiative = dbdict[sessionID]['initiative']
-    initiative.NextRound(deck=initiative.deck, round=initiative.round)
-    return dbdict[sessionID]['initiative'].State()  
+    return dbdict[sessionID]['initiative'].State() 
 
 
-# @app.route('/table/<id>', methods=['GET'])
-# def JoinTable(id):
-#     # renders player-side initiative page
-#     return
+@app.route('/table/<id>', methods=['GET'])
+def JoinTable(id):
+    # renders player-side initiative page
+    # print('starting /table/<id> for id={}'.format(id))
+    if id not in dbdict['tables'].keys():
+        return redirect(url_for('tables'))
+    dbdict['tables'][id]['initiative'].Start()
+    table = dbdict['tables'][id]
+    party = table['initiative'].party
+    round = table['initiative'].round
+    return render_template("initiative.html", party=party, sessionID="", tableID=id, round=round)
+
+@app.route('/table/<id>/next', methods=['GET'])
+def next_round(id):
+    if id not in dbdict['tables'].keys():
+        return redirect(url_for('tables'))
+
+    round = dbdict['tables'][id]['initiative'].round
+    if round == 0:
+        return redirect(url_for('JoinTable'))
+
+    round += 1
+    initiative = dbdict['tables'][id]['initiative']
+    dbdict['tables'][id]['initiative'].NextRound()
+    party = dbdict['tables'][id]['initiative'].party
+    return render_template("initiative.html", party=party, sessionID="", tableID=id, round=round)
 
 # @app.route('/table/<id>/gamemaster', methods=['GET'])
 # def RunTable(id):
@@ -193,31 +242,9 @@ def tables():
             'name': 'new table',
             'members': []
         }
-        return tableID
-    return jsonify([key for key in dbdict['tables'].keys()])
+
+    tables = [(id, table) for id, table in dbdict['tables'].items()]
+    return render_template("tables.html", tables=tables)
 
 if __name__ == "__main__":
     app.run()
-
-
-# ====================
-# Fill out form
-# On submit, party member is added to list on right
-# When finished, should go to initiative 
-# probably needs a way to add people mid-initiative
-
-# ===== Structure =======
-#  ./ [GET]
-    #  Goes to the home page with empty party and empty form
-
-#  ./ [POST]
-    # api POST page that takes in a new party member via JSON
-    # and appends it to the existing party 
-
-#  ./start [POST]
-    # api POST page that takes in the party and starts initiative
-    # Creates ID for the table
-    # Redirects to /tables/<ID> as a [GET]
-
-#  ./tables/<ID> [GET]
-    # api GET page that 
