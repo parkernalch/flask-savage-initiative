@@ -1,4 +1,4 @@
-    <ul class="list-group" name="party" id="party" data-sessionid={{sessionID}}>
+    <ul class="list-group" name="party" id="party" data-sessionid={{sessionID}} data-tableid={{tableID}}>
         {% for member in party %}
         {% if member == party[0] %}
         <div class="list-group-item">
@@ -9,31 +9,122 @@
         {% endif %}
 
             <div class="d-flex">
-                <h4 class="mb-1">{{member.name}}</h4><br>
+                <h4 class="mb-1">
+                    {% if sessionID != '' %}
+                    <button class="btn btn-secondary edit-character-button" data-charname="{{member.name}}">
+                        <i class="fas fa-address-card"></i>
+                    </button>
+                    {% endif %}
+
+                    {% if tableID != '' %}
+                    <button class="btn btn-secondary view-character-button" data-charname="{{member.name}}">
+                        <i class="fas fa-address-card"></i>
+                    </button>
+                    {% endif %}
+                    {{member.name}}
+                </h4>
+                <h6 class="ml-auto">
+                    {% if member.tactician == 1 %}
+                    <span class="badge badge-pill badge-primary">Tactician</span>
+                    {% endif %}
+
+                    {% if member.tactician == 2 %}
+                    <span class="badge badge-pill badge-primary">Battle Master</span>
+                    {% endif %}
+
+                    {% if member.level_headed == 1 %}
+                    <span class="badge badge-pill badge-secondary">Lvl. Headed</span>
+                    {% endif %}
+
+                    {% if member.level_headed == 2 %}
+                    <span class="badge badge-pill badge-secondary">Imp. Lvl. Headed</span>
+                    {% endif %}
+
+                    {% if member.quick > 0 %}
+                    <span class="badge badge-pill badge-success">Quick</span>
+                    {% endif %}
+
+                    {% if member.hesitant > 0 %}
+                    <span class="badge badge-pill badge-warning">Info</span>
+                    {% endif %}
+                </h6>
+                <br>
             </div>
-            <button class="edit-character-button" data-charname="{{member.name}}">
-                <i class="fas fa-address-card"></i>
-                Edit Character
-            </button>
-            <a class="ml-5" href="#">
-                <i class="fas fa-chevron-right"></i>
-                View Hand
-            </a>
-
-            {% if member.tactician > 0 %}
-            <a class="ml-5" href="#">
-                <i class="fas fa-chevron-right"></i>
-                Tactician Cards
-            </a>
-            {% endif %}
-
-            {% for card in member.cards.hand %}
-            <div class="p-2">{{card}}</div>
-            {% endfor %}
+            
         </div>
         {% endfor %}
     </ul>
-    <button name="startInitiative" id="start-initiative-btn">Start Initiative</button>
+    <button class="btn btn-secondary" name="startInitiative" id="start-initiative-btn">Start Initiative</button>
 
     <script>
-    </script>
+    $(".edit-character-button").on('click', function() {
+    let charname = $(this).attr('data-charname');
+    $("#character-modal").attr('data-oldname', charname);
+    charname = charname.replace(" ", "-").toLowerCase();
+    let character = null;
+
+    let sessionID = $('#party').attr('data-sessionid');
+
+    $.ajax({
+        type: 'GET',
+        url: '/' + sessionID + '/party/' + charname,
+        success: function(response){
+            character = response;
+            // console.log(character);
+            $("#modal-charname-input").val(character.name);
+            
+            for(var i=0; i < 3; i++){
+                let query = "#levelHeaded" + i.toString();
+                let query2 = ".lvlheadlabel" + i.toString();
+                if(i === character.level_headed){
+                    $(query).prop('checked', true);
+                    $(query2).addClass("active");
+                } else {
+                    $(query).prop('checked', false);
+                    $(query2).removeClass("active");
+                }
+            }
+            
+            for(var j=0; j<3; j++){
+                let query = "#tactician" + j.toString();
+                let query2 = ".tactlabel" + j.toString();
+                if(j === character.tactician){
+                    $(query).prop('checked', true);
+                    $(query2).addClass("active");
+                } else {
+                    $(query).prop('checked', false);
+                    $(query2).removeClass("active");
+                }
+            }
+           
+            if(character.quick > 0){
+                $("#quickEdge").prop('checked', true);
+                $(".quicklabel").addClass("active");
+                $("#hesitantHindrance").prop('checked', false);
+                $(".hesitantlabel").removeClass("active");
+                $("#noQuickHesitant").prop('checked', false);
+                $(".nonelabel").removeClass("active");
+            } else if (character.hesitant > 0) {
+                $("#quickEdge").prop('checked', false);
+                $(".quicklabel").removeClass("active");
+                $("#hesitantHindrance").prop('checked', true);
+                $(".hesitantlabel").addClass("active");
+                $("#noQuickHesitant").prop('checked', false);
+                $(".nonelabel").removeClass("active");
+            } else {
+                $("#quickEdge").prop('checked', false);
+                $(".quicklabel").removeClass("active");
+                $("#hesitantHindrance").prop('checked', false);
+                $(".hesitantlabel").removeClass("active");
+                $("#noQuickHesitant").prop('checked', true);
+                $(".nonelabel").addClass("active");
+            }
+        },
+        error: function(e){
+            alert("Character Failed to Load");
+        }
+    });
+
+    $("#character-modal").modal();
+});
+</script>
