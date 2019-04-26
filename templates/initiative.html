@@ -1,0 +1,226 @@
+<div class="d-flex">
+    <h3 class="mx-auto">Initiative Order: Round {{round}}</h3>
+</div>
+<ul class="list-group" name="initiative-list" id="initiative-list" data-tableid={{tableID}}>
+    {% for member in party %}
+    {% if member == party[0] %}
+    <div class="list-group-item active first-item">
+    {% endif %}
+
+    {% if member == party[-1] %}
+    <div class="list-group-item last-item">
+    {% endif %}
+
+    {% if member != party[0] and member != party[-1] %}
+    <div class="list-group-item">
+    {% endif %}
+
+    <div class="d-flex">
+            <h4 class="mb-1">
+                {% if sessionID != '' %}
+                <button class="btn btn-secondary view-character-button" data-charname="{{member.name}}">
+                    <i class="fas fa-address-card"></i>
+                </button>
+                {% endif %}
+
+                {% if tableID != '' %}
+                <button class="btn btn-primary view-character-button" data-charname="{{member.name}}">
+                    <i class="fas fa-address-card"></i>
+                </button>
+                {% endif %}
+                {{member.name}}
+            </h4>
+            <h6 class="ml-auto">
+                {% if member.tactician == 1 %}
+                <span class="badge badge-pill badge-primary">Tactician</span>
+                {% endif %}
+
+                {% if member.tactician == 2 %}
+                <span class="badge badge-pill badge-primary">Battle Master</span>
+                {% endif %}
+
+                {% if member.level_headed == 1 %}
+                <span class="badge badge-pill badge-secondary">Lvl. Headed</span>
+                {% endif %}
+
+                {% if member.level_headed == 2 %}
+                <span class="badge badge-pill badge-secondary">Imp. Lvl. Headed</span>
+                {% endif %}
+
+                {% if member.quick > 0 %}
+                <span class="badge badge-pill badge-success">Quick</span>
+                {% endif %}
+
+                {% if member.hesitant > 0 %}
+                <span class="badge badge-pill badge-warning">Info</span>
+                {% endif %}
+            </h6>
+            <br>
+        </div>
+
+        <a class="btn btn-secondary btn-sm ml-5 hand-toggler" href="#cards-in-hand-{{member.name.replace(' ','-').lower()}}" type="button" data-toggle="collapse">
+            <i class="collapse show fas fa-chevron-right"></i>
+            View Hand
+        </a>
+
+        {% if member.tactician > 0 %}
+        <a class="btn btn-secondary btn-sm ml-5 tactician-toggler" href="#cards-in-tactician-{{member.name.replace(' ','-').lower()}}" type="button" data-toggle="collapse">
+            <i class="collapse show fas fa-chevron-right"></i>
+            Tactician Cards
+        </a>
+        {% endif %}
+
+        <div class="d-flex">
+            {% if member == party[0] %}
+            <div class="collapse show p-2" id="cards-in-hand-{{member.name.replace(' ','-').lower()}}">
+            {% endif %}
+            
+            {% if member != party[0] %}
+            <div class="collapse p-2" id="cards-in-hand-{{member.name.replace(' ','-').lower()}}">
+            {% endif %}
+
+                <div class="d-flex">
+                    {% for card in member.cards.hand %}
+                    <div class="p-1">
+                        <img src= {{ url_for('static', filename = 'assets/{}.png'.format(card)) }} width="64" height="96">
+                    </div>
+                    {% endfor %}
+                </div>   
+            </div>
+
+            <div class="collapse p-2" id="cards-in-tactician-{{member.name.replace(' ','-').lower()}}">
+                <div class="d-flex">
+                    {% for card in member.cards.tactician %}
+                    <div class="p-1">
+                        <img src= {{ url_for('static', filename = 'assets/{}.png'.format(card)) }} width="64" height="96">
+                    </div>
+                    {% endfor %}
+                </div>   
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</ul>
+
+<div class="d-flex">
+    <button class="btn btn-primary ml-auto" name="next-round" id="next-round-btn">Next Round</button>
+</div>
+
+<script>
+$("#next-round-btn").on('click', function() {
+    let current = $("#initiative-list").children(".active");
+    let isFirst = current.hasClass("first-item");
+    let isLast = current.hasClass("last-item");
+    let children = $("#initiative-list").children();
+    if(!isLast){
+        let next = false;
+        $("#initiative-list > div").each(function(){
+            if(next){
+                $(this).addClass("active");
+                $(this).find(".hand-toggler")[0].click();
+                next = false;
+                return;
+            }
+            if($(this).hasClass("active")){
+                next = true;
+                $(this).removeClass("active");
+                $(this).find(".hand-toggler")[0].click();
+            }
+        });
+    }
+    else{
+        $.ajax({
+            url: "/table/" + $("#initiative-list").attr("data-tableid") + '/next',
+            type: 'GET',
+            success: function(response){ 
+                $("#page-content").html(response);
+            },
+            error: function() {
+                alert('Next Round Failed');
+            }
+        });
+    }
+});
+
+$(".hand-toggler, .tactician-toggler").on('click', function(){
+    let rclass = $(this).find(".fa-chevron-right") || false;
+    let dclass = $(this).find(".fa-chevron-down") || false;
+    if (rclass){
+        rclass.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+    }
+    if (dclass){
+        dclass.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+    }
+});
+
+$(".view-character-button").on('click', function() {
+    let charname = $(this).attr('data-charname');
+    $("#character-modal").attr('data-oldname', charname);
+    charname = charname.replace(" ", "-").toLowerCase();
+    let character = null;
+
+    let sessionID = $('#party').attr('data-sessionid');
+
+    $.ajax({
+        type: 'GET',
+        url: '/' + sessionID + '/party/' + charname,
+        success: function(response){
+            character = response;
+            // console.log(character);
+            $("#modal-charname-input").val(character.name);
+            
+            for(var i=0; i < 3; i++){
+                let query = "#levelHeaded" + i.toString();
+                let query2 = ".lvlheadlabel" + i.toString();
+                if(i === character.level_headed){
+                    $(query).prop('checked', true);
+                    $(query2).addClass("active");
+                } else {
+                    $(query).prop('checked', false);
+                    $(query2).removeClass("active");
+                }
+            }
+            
+            for(var j=0; j<3; j++){
+                let query = "#tactician" + j.toString();
+                let query2 = ".tactlabel" + j.toString();
+                if(j === character.tactician){
+                    $(query).prop('checked', true);
+                    $(query2).addClass("active");
+                } else {
+                    $(query).prop('checked', false);
+                    $(query2).removeClass("active");
+                }
+            }
+        
+            if(character.quick > 0){
+                $("#quickEdge").prop('checked', true);
+                $(".quicklabel").addClass("active");
+                $("#hesitantHindrance").prop('checked', false);
+                $(".hesitantlabel").removeClass("active");
+                $("#noQuickHesitant").prop('checked', false);
+                $(".nonelabel").removeClass("active");
+            } else if (character.hesitant > 0) {
+                $("#quickEdge").prop('checked', false);
+                $(".quicklabel").removeClass("active");
+                $("#hesitantHindrance").prop('checked', true);
+                $(".hesitantlabel").addClass("active");
+                $("#noQuickHesitant").prop('checked', false);
+                $(".nonelabel").removeClass("active");
+            } else {
+                $("#quickEdge").prop('checked', false);
+                $(".quicklabel").removeClass("active");
+                $("#hesitantHindrance").prop('checked', false);
+                $(".hesitantlabel").removeClass("active");
+                $("#noQuickHesitant").prop('checked', true);
+                $(".nonelabel").addClass("active");
+            }
+        },
+        error: function(e){
+            alert("Character Failed to Load");
+        }
+    });
+
+    $("#character-modal").modal();
+    });
+</script>
