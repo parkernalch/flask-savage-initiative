@@ -60,6 +60,8 @@ class Character:
                         self.cards['hand'].append(temp)
                         break                
 
+        self.cards['hand'] = sorted((card for card in self.cards['hand']), key=lambda x: GetCardValue(x), reverse=True)
+
         ## Handle Tactician
         self.cards['tactician'] = deck.DealN(self.tactician)
         return
@@ -139,9 +141,9 @@ class Initiative:
             self.round = kwargs['round']
 
         if 'deck' in kwargs.keys():
-            print(kwargs['deck']['cards'])
-            print(kwargs['deck']['nextCard'])
-            print(kwargs['deck']['needShuffle'])
+            # print(kwargs['deck']['cards'])
+            # print(kwargs['deck']['nextCard'])
+            # print(kwargs['deck']['needShuffle'])
             self.deck.Load(kwargs['deck']['cards'], kwargs['deck']['nextCard'])
             self.needShuffle = kwargs['deck']['needShuffle']
 
@@ -156,6 +158,7 @@ class Initiative:
                 if c in ['15b', '15r']:
                     self.needShuffle = True
         self.round += 1 
+        self.InitiativeOrder()
         return self.State()
     def State(self):
         output = {
@@ -171,16 +174,16 @@ class Initiative:
                 'hesitant': character.hesitant
             }
             output['party'].append(newchar)
-        print('''
-        === Round {round} ===
-        {output}
-        === END ===
-        '''.format(round=self.round, output=output))
-        output['deck'] = {
-            'cards': self.deck.cards,
-            'nextCard': self.deck.nextCard,
-            'needShuffle': self.needShuffle
-        }
+        # print('''
+        # === Round {round} ===
+        # {output}
+        # === END ===
+        # '''.format(round=self.round, output=output))
+        # output['deck'] = {
+        #     'cards': self.deck.cards,
+        #     'nextCard': self.deck.nextCard,
+        #     'needShuffle': self.needShuffle
+        # }
         output['round'] = self.round
         return output
     def SerializeParty(self):
@@ -188,6 +191,10 @@ class Initiative:
         for character in self.party:
             output.append(character.Get())
         return output
+    def InitiativeOrder(self):
+        orderedparty = sorted((character for character in self.party), key=lambda x: GetCardValue(x.cards['hand'][0]), reverse=True)
+        self.party = orderedparty
+        return
 
 def BuildParty(party):
     partyList = []
@@ -198,6 +205,7 @@ def BuildParty(party):
 def AddMemberTOParty(member, party):
     update = False
     index = -1
+    # print(member)
     for i, char in enumerate(party):
         if member['name'] == char.name:
             index = i
@@ -219,6 +227,12 @@ def AddMemberTOParty(member, party):
     else:
         party.append(newchar)
     return party
+
+def GetCardValue(card):
+    value = float(card[:-1])
+    suit = card[-1:]
+    trailer = (ord(suit) - 20) / 100.0
+    return value + trailer
 
 # party = [
 #     {
