@@ -1,0 +1,36 @@
+<ul class="list-group" name="tables" id="tables">
+    {% for (id, table) in tables %}
+    <div class="list-group-item">
+        <div class="d-flex">
+            <h4 class="mb-1">{{table.name}}</h4><br>
+        </div>
+        <div class="d-flex">
+            <h5 class="mb-1">{{table.description}}</h5>
+        </div>
+
+        <button class="join-table-button" data-tableid="{{id}}">
+            <i class="fas fa-dice-d20"></i>
+            Join Table
+        </button>
+    </div>
+    {% endfor %}
+</ul>
+
+<script>
+$(".join-table-button").on('click', function() {
+    let tableid = $(this).attr('data-tableid');
+    // alert("table " + tableid.toString() + " clicked!");
+    $.ajax({
+       url: '/table/' + tableid,
+       type: 'GET',
+       dataType: 'html',
+       success: function(response) {
+           // console.log(response);
+           $("#page-content").html(response);
+       } ,
+       error: function() {
+           alert("Table Join Failed");
+       }
+    });
+});
+</script>
