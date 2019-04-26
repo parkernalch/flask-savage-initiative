@@ -2,6 +2,7 @@ import flask
 from cards import *
 from flask import request, jsonify, render_template, redirect, url_for
 import uuid
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app  = flask.Flask(__name__)
 app.config['DEBUG'] = True
@@ -39,13 +40,10 @@ party = [
 ]
 party = BuildParty(party)
 I = Initiative(party)
-# I.Start()
-
-# tables = []
 
 dbdict = {
     # 'sessionID': { 'username': uname, 'party': [<characters>] }
-    '82abd0e5-f588-4308-ae23-46fc394bb092': {'username': 'parkernalch', 'party': party, 'tables': [] },
+    'c61ffb7f-6804-47a9-a5aa-a316cab602be': {'username': 'parkernalch', 'party': party, 'tables': [] },
     'tables': {
         'hyperion-chronicle-82abd0e5': {
             'name': 'Hyperion Chronicle',
@@ -68,12 +66,39 @@ dbdict = {
             ''',
             'initiative': I
         }
+    },
+    'users': {
+        'parkernalch': {
+            'latest_cookie': 'c61ffb7f-6804-47a9-a5aa-a316cab602be',
+            'password': None,
+            'party': party,
+            'tables': []
+        }
     }
 }
 
+@app.route('/login', methods=['GET', 'POST'])
+def login(**kwargs):
+    sessionID = request.cookies.get('InitiativeSession')
+
+    if request.method == 'GET':
+        for _,user in dbdict['users'].items():
+            if user['latest_cookie'] == sessionID:
+                return redirect(url_for('home'))
+        return render_template("login.html")
+    
+    login_token = request.get_json()
+    if login_token['username'] not in [key for key in dbdict['users'].keys()]:
+        return redirect(url_for('login', username=False, password=False))
+    
+    if not check_password_hash(dbdict[login_token['username']]['password'], login_token['password']):
+        return redirect(url_for('login', username=True, password=False))
+
+    return redirect(url_for('home'))
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    # print('routing party or /')
+    '''Routes user to homepage (layout.html)'''
     sessionID = request.cookies.get('InitiativeSession')
     if not sessionID:
         return redirect(url_for('cookie'))
@@ -84,7 +109,7 @@ def home():
             party = session['party']
         else:
             party = []
-        # return render_template('home.html', party=party, sessionID=sessionID)
+        #return render_template('home.html')
         return render_template('layout.html', party=party, sessionID=sessionID, tableID="")
     else:
         return redirect(url_for('cookie'))
@@ -178,7 +203,8 @@ def cookie():
         dbdict[sessionID] = {'username': None, 'party': []}
 
         response = redirect(url_for('home'))
-        response.set_cookie('InitiativeSession', sessionID)
+        response.set_cookie('InitiativeSession', sessionID, max_age=90)
+
         return response
     
     if sessionID not in dbdict.keys():
