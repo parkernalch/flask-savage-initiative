@@ -107,120 +107,152 @@
 </div>
 
 <script>
-$("#next-round-btn").on('click', function() {
-    let current = $("#initiative-list").children(".active");
-    let isFirst = current.hasClass("first-item");
-    let isLast = current.hasClass("last-item");
-    let children = $("#initiative-list").children();
-    if(!isLast){
-        let next = false;
-        $("#initiative-list > div").each(function(){
-            if(next){
-                $(this).addClass("active");
-                $(this).find(".hand-toggler")[0].click();
-                next = false;
-                return;
-            }
-            if($(this).hasClass("active")){
-                next = true;
-                $(this).removeClass("active");
-                $(this).find(".hand-toggler")[0].click();
-            }
-        });
-    }
-    else{
-        $.ajax({
-            url: "/table/" + $("#initiative-list").attr("data-tableid") + '/next',
-            type: 'GET',
-            success: function(response){ 
-                $("#page-content").html(response);
-            },
-            error: function() {
-                alert('Next Round Failed');
-            }
-        });
-    }
-});
+$(document).ready(function() {
+    console.log("websocket connecting...");
+    
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    
+    socket.on('connect', function() {
+        console.log("I'm Connected");
+        socket.emit('my event', {data: 'I\'m connected!'});
+        let randomID = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for (var i=0; i < 6; i++){
+            randomID += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        let roomData = {
+            room: $("#initiative-list").attr("data-tableid"),
+            username: randomID
+        };
+        socket.emit('join', roomData);
+    });
 
-$(".hand-toggler, .tactician-toggler").on('click', function(){
-    let rclass = $(this).find(".fa-chevron-right") || false;
-    let dclass = $(this).find(".fa-chevron-down") || false;
-    if (rclass){
-        rclass.removeClass('fa-chevron-right').addClass('fa-chevron-down');
-    }
-    if (dclass){
-        dclass.removeClass('fa-chevron-down').addClass('fa-chevron-right');
-    }
-});
+    socket.on('go to next', function(){
+        console.log('go to next received from socket');
+        advanceInitiative("socket");
+    });
 
-$(".view-character-button").on('click', function() {
-    let charname = $(this).attr('data-charname');
-    $("#character-modal").attr('data-oldname', charname);
-    charname = charname.replace(" ", "-").toLowerCase();
-    let character = null;
+    $("#next-round-btn").on('click', function(){
+        // advanceInitiative("button");
+        socket.emit('next round', { room: $("#initiative-list").attr("data-tableid") });
+    });
 
-    let sessionID = $('#party').attr('data-sessionid');
-
-    $.ajax({
-        type: 'GET',
-        url: '/' + sessionID + '/party/' + charname,
-        success: function(response){
-            character = response;
-            // console.log(character);
-            $("#modal-charname-input").val(character.name);
-            
-            for(var i=0; i < 3; i++){
-                let query = "#levelHeaded" + i.toString();
-                let query2 = ".lvlheadlabel" + i.toString();
-                if(i === character.level_headed){
-                    $(query).prop('checked', true);
-                    $(query2).addClass("active");
-                } else {
-                    $(query).prop('checked', false);
-                    $(query2).removeClass("active");
+    function advanceInitiative(origin){
+        let current = $("#initiative-list").children(".active");
+        let isFirst = current.hasClass("first-item");
+        let isLast = current.hasClass("last-item");
+        let children = $("#initiative-list").children();
+        if(!isLast){
+            let next = false;
+            $("#initiative-list > div").each(function(){
+                if(next){
+                    $(this).addClass("active");
+                    $(this).find(".hand-toggler")[0].click();
+                    next = false;
+                    return;
                 }
-            }
-            
-            for(var j=0; j<3; j++){
-                let query = "#tactician" + j.toString();
-                let query2 = ".tactlabel" + j.toString();
-                if(j === character.tactician){
-                    $(query).prop('checked', true);
-                    $(query2).addClass("active");
-                } else {
-                    $(query).prop('checked', false);
-                    $(query2).removeClass("active");
+                if($(this).hasClass("active")){
+                    next = true;
+                    $(this).removeClass("active");
+                    $(this).find(".hand-toggler")[0].click();
                 }
-            }
-        
-            if(character.quick > 0){
-                $("#quickEdge").prop('checked', true);
-                $(".quicklabel").addClass("active");
-                $("#hesitantHindrance").prop('checked', false);
-                $(".hesitantlabel").removeClass("active");
-                $("#noQuickHesitant").prop('checked', false);
-                $(".nonelabel").removeClass("active");
-            } else if (character.hesitant > 0) {
-                $("#quickEdge").prop('checked', false);
-                $(".quicklabel").removeClass("active");
-                $("#hesitantHindrance").prop('checked', true);
-                $(".hesitantlabel").addClass("active");
-                $("#noQuickHesitant").prop('checked', false);
-                $(".nonelabel").removeClass("active");
-            } else {
-                $("#quickEdge").prop('checked', false);
-                $(".quicklabel").removeClass("active");
-                $("#hesitantHindrance").prop('checked', false);
-                $(".hesitantlabel").removeClass("active");
-                $("#noQuickHesitant").prop('checked', true);
-                $(".nonelabel").addClass("active");
-            }
-        },
-        error: function(e){
-            alert("Character Failed to Load");
+            });
+        }
+        else{
+            $.ajax({
+                url: "/table/" + $("#initiative-list").attr("data-tableid") + '/next',
+                type: 'GET',
+                success: function(response){ 
+                    $("#page-content").html(response);
+                },
+                error: function() {
+                    alert('Next Round Failed');
+                }
+            });
+        }
+    }
+
+    $(".hand-toggler, .tactician-toggler").on('click', function(){
+        let rclass = $(this).find(".fa-chevron-right") || false;
+        let dclass = $(this).find(".fa-chevron-down") || false;
+        if (rclass){
+            rclass.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+        }
+        if (dclass){
+            dclass.removeClass('fa-chevron-down').addClass('fa-chevron-right');
         }
     });
 
-    $("#character-modal").modal();
+    $(".view-character-button").on('click', function() {
+        let charname = $(this).attr('data-charname');
+        $("#character-modal").attr('data-oldname', charname);
+        charname = charname.replace(" ", "-").toLowerCase();
+        let character = null;
+
+        let sessionID = $('#party').attr('data-sessionid');
+
+        $.ajax({
+            type: 'GET',
+            url: '/' + sessionID + '/party/' + charname,
+            success: function(response){
+                character = response;
+                // console.log(character);
+                $("#modal-charname-input").val(character.name);
+                
+                for(var i=0; i < 3; i++){
+                    let query = "#levelHeaded" + i.toString();
+                    let query2 = ".lvlheadlabel" + i.toString();
+                    if(i === character.level_headed){
+                        $(query).prop('checked', true);
+                        $(query2).addClass("active");
+                    } else {
+                        $(query).prop('checked', false);
+                        $(query2).removeClass("active");
+                    }
+                }
+                
+                for(var j=0; j<3; j++){
+                    let query = "#tactician" + j.toString();
+                    let query2 = ".tactlabel" + j.toString();
+                    if(j === character.tactician){
+                        $(query).prop('checked', true);
+                        $(query2).addClass("active");
+                    } else {
+                        $(query).prop('checked', false);
+                        $(query2).removeClass("active");
+                    }
+                }
+            
+                if(character.quick > 0){
+                    $("#quickEdge").prop('checked', true);
+                    $(".quicklabel").addClass("active");
+                    $("#hesitantHindrance").prop('checked', false);
+                    $(".hesitantlabel").removeClass("active");
+                    $("#noQuickHesitant").prop('checked', false);
+                    $(".nonelabel").removeClass("active");
+                } else if (character.hesitant > 0) {
+                    $("#quickEdge").prop('checked', false);
+                    $(".quicklabel").removeClass("active");
+                    $("#hesitantHindrance").prop('checked', true);
+                    $(".hesitantlabel").addClass("active");
+                    $("#noQuickHesitant").prop('checked', false);
+                    $(".nonelabel").removeClass("active");
+                } else {
+                    $("#quickEdge").prop('checked', false);
+                    $(".quicklabel").removeClass("active");
+                    $("#hesitantHindrance").prop('checked', false);
+                    $(".hesitantlabel").removeClass("active");
+                    $("#noQuickHesitant").prop('checked', true);
+                    $(".nonelabel").addClass("active");
+                }
+            },
+            error: function(e){
+                alert("Character Failed to Load");
+            }
+        });
+
+        $("#character-modal").modal();
     });
+});
 </script>
