@@ -1,13 +1,13 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" href="#">Savage Initiative Tracker</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" id="navbar-hamburger" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            <a class="nav-link" href="#" id="home-navbutton">Home <span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="new-character-navbutton" href="#">New Character</a>
@@ -21,12 +21,40 @@
             <button class="dropdown-item create-table">Create Table</button>
         </li>
         <li class="nav-item">
-            <a class="nav-link disabled" href="#">Disabled</a>
+            <a class="nav-link disabled" href="#">Character Vault</a>
         </li>
         </ul>
-        <form class="form-inline my-2 my-lg-0">
-        <!-- <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"> -->
-        <button class="btn btn-primary my-2 my-sm-0" type="button">Login</button>
-        </form>
+        
+        <div class="nav-item dropdown">
+            <button class="btn btn-primary dropdown-toggle" id='loginDropdown' role="button" data-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
+                Login
+            </button>
+            <div class="dropdown-menu dropdown-menu-right p-4">
+                
+                <label class="mt-2" for="login-username">username</label>
+                <input type="text" id="login-username">
+
+                <label class="mt-2" for="login-password">password</label>
+                <input type="password" id="login-password">
+                <div class="dropdown-divider"></div>
+                <div class="d-flex justify-content-around">
+                    <button class="btn btn-primary" id="navbar-login-button">Login</button>
+                    <button class="btn btn-outline-primary" id="navbar-signup-button">Sign Up</button>
+                </div>
+            </div>
+        </div>
     </div>
 </nav>
+
+<script>
+$("#navbar-hamburger").on("click", function() {
+    var circlebutton = $("#circle-newchar-top");
+    if(circlebutton){
+        if($("#navbarSupportedContent").hasClass("show")){
+            circlebutton.css("top", "25px");
+        } else {
+            circlebutton.css("top", "240px");
+        }
+    }
+});
+</script>
