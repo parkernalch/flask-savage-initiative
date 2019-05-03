@@ -1,0 +1,72 @@
+<h2>{{ table.name }}</h2>
+<div class="container d-flex">
+    <button class="btn btn-default p-2" id="btn-start-initiative">Initiative</button>
+    <button class="btn btn-default p-2" id="btn-start-chase">Chase</button>
+    <button class="btn btn-default p-2 disabled" id="btn-view-characters">Characters</button>
+    <button class="btn btn-default p-2 disabled" id="btn-launch-wiki">Wiki</button>
+    <button class="btn btn-warning p-2" id="leave-room">X</button>
+</div>
+<div class="container d-flex" id="table-content" data-tableid="{{ table.id }}">
+
+</div>
+
+<script>
+$(document).ready(function() {
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    socket.on('connect', function() {
+        console.log("I'm Connected");
+        socket.emit('my event', {data: 'I\'m connected!'});
+        let randomID = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for (var i=0; i < 6; i++){
+            randomID += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        let roomData = {
+            room: $("#table-content").attr("data-tableid"),
+            username: randomID
+        };
+        socket.emit('join', roomData);
+    });
+
+    // Initiative
+
+    function startInitiative(){
+        console.log('starting initative');
+    }
+
+    socket.on('start initiative', function(){
+        startInitiative();
+    });
+
+    $("#btn-start-initiative").on('click', function(){
+        var data = {
+            room: $("#table-content").attr("data-tableid")
+        };
+        emit('start initiative in room', data);
+    });
+
+    // Chase Scene
+
+    function startChase(){
+        console.log('starting chase scene');
+    }
+
+    socket.on('start chase', function() {
+        startChase();
+    });
+
+    $("btn-start-chase").on('click', function(){
+        var data = {
+            room: $("#table-content").attr("data.tableid")
+        };
+        emit('start chase in room', data);
+    });
+
+    // Character Vault
+
+    // Campaign Wiki
+
+});
+</script>
