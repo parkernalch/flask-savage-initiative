@@ -1,11 +1,61 @@
 import flask
 from cards import *
-from flask import request, jsonify, render_template, redirect, url_for
+from flask import request, jsonify, render_template, redirect, url_for, session
 import uuid
+from os import urandom
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_socketio import SocketIO, join_room, leave_room, send, emit
+from flask_sqlalchemy import SQLAlchemy
 
 app  = flask.Flask(__name__)
 app.config['DEBUG'] = True
+app.config['SECRET_KEY'] = urandom(24)
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+socketio = SocketIO(app)
+# db = SQLAlchemy(app)
+
+
+# class Character(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(24), default='', nullable=False)
+#     tactician = db.Column(db.Integer, default=0, nullable=False) # 0, 1, 2
+#     level_headed = db.Column(db.Integer, default=0, nullable=False) # 0, 1, 2
+#     quick = db.Column(db.Boolean, default=False, nullable=False) # True / False
+#     hesitant = db.Column(db.Boolean, default=False, nullable=False) # True / False
+#     table_id = db.Column(db.Integer) # one-to-one character <-> table
+
+#     def __init__(self, name, tactician, level_headed, quick, hesitant, table_id):
+#         self.name = name
+#         self.tactician = tactician
+#         self.level_headed = level_headed
+#         self.quick = quick
+#         self.hesitant = hesitant
+#         self.table_id = table_id
+
+# class Table(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(30))
+#     description = db.Column(db.Text)
+#     last_game = db.Column(db.DateTime)
+#     next_game = db.Column(db.DateTime)
+#     systemID = db.Column(db.Integer) # one-to-one table <-> system_id
+#     characters = db.relationship() # many-to-one relationship table -< character
+#     game_master = db.Column(db.String(24))
+#     players = db.Column(db.String(24))
+
+#     def __init__(self, name, system):
+#         self.name = name
+#         self.systemID = system
+
+# class RPGSystem(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(24)) # should be unique
+#     table_id = db.relationship('Table', backref='rpgsystem', lazy=True) # many-to-one relationship system -< table
+
+# class User(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     username = db.Column(db.String(20), unique=True)
+#     password = db.Column(db.String(200))
 
 
 party = [
@@ -109,14 +159,12 @@ def home():
             party = session['party']
         else:
             party = []
-        #return render_template('home.html')
         return render_template('layout.html', party=party, sessionID=sessionID, tableID="")
     else:
         return redirect(url_for('cookie'))
 
 @app.route('/party', methods=['GET'])
 def party():
-    # print('starting /party')
     sessionID = request.cookies.get('InitiativeSession')
     if not sessionID:
         return redirect(url_for('cookie'))
@@ -124,46 +172,12 @@ def party():
         return redirect(url_for('cookie'))
     
     party = dbdict[sessionID]['party']
-    # print('rendering party list: party={}, sessionID={}'.format([member.name for member in party], sessionID))
     return render_template('party_list.html', party=party, sessionID=sessionID, tableID="")
-
-@app.route('/<id>/party/add', methods=['POST'])
-def AddPartyMember(id):
-    party = dbdict[id]['party']
-    request_data = request.get_json()
-    # print('dict entry')
-    # print(dbdict[id])
-    # print('party')
-    # for member in party:
-        # print(member.name)
-    # print('request_data')
-    # print(request_data)
-
-    party = AddMemberTOParty(request_data, party)
-
-    dbdict[id]['party'] = party
-    # print(dbdict[id])
-    # receives a JSON character object
-    # adds character to table <id>
-    # returns a JSON party object for table <id>
-    party = [character.Get() for character in party]
-    response = jsonify(party)
-    # return response
-    return redirect('/party')
-
-# @app.route('/<id>/party', methods=['GET'])
-# def GetParty(id):
-#     party = dbdict[id]['party']
-#     # returns a JSON party object for table <id>
-#     return jsonify([member.Get() for member in party])
 
 @app.route('/<id>/party/<name>', methods=['GET'])
 def GetPartyMember(id, name):
-    # print('starting GetPartyMember [get]: id={}, name={})'.format(id, name))
     member = {}
-    # print(id)
     if id in dbdict.keys():
-        # print(dbdict[id])
         for char in dbdict[id]['party']:
             if char.name.replace(' ', '-').lower() == name:
                 member = char
@@ -252,10 +266,27 @@ def next_round(id):
     party = dbdict['tables'][id]['initiative'].party
     return render_template("initiative.html", party=party, sessionID="", tableID=id, round=round)
 
-# @app.route('/table/<id>/gamemaster', methods=['GET'])
-# def RunTable(id):
-#     # renders gm-side initiative page
-#     return
+@socketio.on('next round')
+def handle_next_round(data):
+    print('Going to next round in room {}'.format(data['room']))
+    # print(emit('go to next', room=data['room']))
+    emit('go to next', room=data['room'])
+
+@socketio.on('join')
+def handle_join_event(data):
+    username = data['username']
+    room = data['room']
+    join_room(room)
+    print(username + ' has entered room {}'.format(room))
+    # send(username + ' has entered the room.', room=room, callback=ack)
+
+@socketio.on('leave')
+def handle_leave_event(data):
+    username = data['username']
+    room = data['room']
+    leave_room(room)
+    print(username + ' has left room {}'.format(room))
+    # send(username + ' has left the room.', room=room, callback=ack)
 
 @app.route('/tables', methods=['GET', 'POST'])
 def tables():
@@ -273,4 +304,5 @@ def tables():
     return render_template("tables.html", tables=tables)
 
 if __name__ == "__main__":
-    app.run()
+    # app.run()
+    socketio.run(app)
