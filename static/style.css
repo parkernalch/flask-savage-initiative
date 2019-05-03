@@ -1,0 +1,25 @@
+.btn-circle {
+    display: block;
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    text-align: center;
+    font-size: 24px;
+    line-height: 1.42857;
+    cursor: pointer;
+    z-index: 2;
+    -webkit-transition: top 1s;    
+    transition: top 0.36s;
+}
+
+.btn-circle.newchar-navbtn {
+    position: absolute;
+    top: 25px;
+    right: 100px;
+}
+
+.btn-circle.newchar-footer {
+    position: absolute;
+    bottom: 25px;
+    right: 100px;
+}
