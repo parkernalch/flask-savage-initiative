@@ -1,60 +1,71 @@
+<div class="container mx-auto mt-2 mb-2">
+    <button class="btn bg-primary btn-circle text-light newchar-navbtn" id="circle-newchar-top">
+        <i class="fas fa-plus"></i>
+    </button>
+
     <ul class="list-group" name="party" id="party" data-sessionid={{sessionID}} data-tableid={{tableID}}>
         {% for member in party %}
-        {% if member == party[0] %}
-        <div class="list-group-item">
-        {% endif %}
+            {% if member == party[0] %}
+            <div class="list-group-item my-2">
+            {% endif %}
 
-        {% if member != party[0] %}
-        <div class="list-group-item">
-        {% endif %}
+            {% if member != party[0] %}
+            <div class="list-group-item my-2">
+            {% endif %}
 
-            <div class="d-flex">
-                <h4 class="mb-1">
-                    {% if sessionID != '' %}
-                    <button class="btn btn-secondary edit-character-button" data-charname="{{member.name}}">
-                        <i class="fas fa-address-card"></i>
-                    </button>
-                    {% endif %}
+                <div class="d-flex">
+                    <h4 class="mb-1">
+                        {% if sessionID != '' %}
+                        <button class="btn btn-secondary edit-character-button" data-charname="{{member.name}}">
+                            <i class="fas fa-address-card"></i>
+                        </button>
+                        {% endif %}
 
-                    {% if tableID != '' %}
-                    <button class="btn btn-secondary view-character-button" data-charname="{{member.name}}">
-                        <i class="fas fa-address-card"></i>
-                    </button>
-                    {% endif %}
-                    {{member.name}}
-                </h4>
-                <h6 class="ml-auto">
-                    {% if member.tactician == 1 %}
-                    <span class="badge badge-pill badge-primary">Tactician</span>
-                    {% endif %}
+                        {% if tableID != '' %}
+                        <button class="btn btn-secondary view-character-button" data-charname="{{member.name}}">
+                            <i class="fas fa-address-card"></i>
+                        </button>
+                        {% endif %}
+                        {{member.name}}
+                    </h4>
+                    <h6 class="ml-auto">
+                        {% if member.tactician == 1 %}
+                        <span class="badge badge-pill badge-primary">Tactician</span>
+                        {% endif %}
 
-                    {% if member.tactician == 2 %}
-                    <span class="badge badge-pill badge-primary">Battle Master</span>
-                    {% endif %}
+                        {% if member.tactician == 2 %}
+                        <span class="badge badge-pill badge-primary">Battle Master</span>
+                        {% endif %}
 
-                    {% if member.level_headed == 1 %}
-                    <span class="badge badge-pill badge-secondary">Lvl. Headed</span>
-                    {% endif %}
+                        {% if member.level_headed == 1 %}
+                        <span class="badge badge-pill badge-secondary">Lvl. Headed</span>
+                        {% endif %}
 
-                    {% if member.level_headed == 2 %}
-                    <span class="badge badge-pill badge-secondary">Imp. Lvl. Headed</span>
-                    {% endif %}
+                        {% if member.level_headed == 2 %}
+                        <span class="badge badge-pill badge-secondary">Imp. Lvl. Headed</span>
+                        {% endif %}
 
-                    {% if member.quick > 0 %}
-                    <span class="badge badge-pill badge-success">Quick</span>
-                    {% endif %}
+                        {% if member.quick > 0 %}
+                        <span class="badge badge-pill badge-success">Quick</span>
+                        {% endif %}
 
-                    {% if member.hesitant > 0 %}
-                    <span class="badge badge-pill badge-warning">Info</span>
-                    {% endif %}
-                </h6>
-                <br>
+                        {% if member.hesitant > 0 %}
+                        <span class="badge badge-pill badge-warning">Info</span>
+                        {% endif %}
+                    </h6>
+                    <br>
+                </div>
+                
             </div>
-            
-        </div>
         {% endfor %}
     </ul>
-    <button class="btn btn-secondary" name="startInitiative" id="start-initiative-btn">Start Initiative</button>
+    <div class="d-flex justify-content-center">
+        <button class="btn btn-secondary" name="startInitiative" id="start-initiative-btn">Start Initiative</button>
+    </div>
+    <button class="btn btn-default btn-circle bg-primary text-light newchar-footer" id="circle-newchar-bottom">
+        <i class="fas fa-plus"></i>
+    </button>
+</div>
 
     <script>
     $(".edit-character-button").on('click', function() {
@@ -127,4 +138,18 @@
 
     $("#character-modal").modal();
 });
+
+$("#circle-newchar-top").on("click", function() {
+    console.log("top circle button clicked");
+    $("#new-character-navbutton").click();
+});
+
+$("#circle-newchar-bottom").on("click", function() {
+    console.log("bottom circle button clicked");
+    $("#new-character-navbutton").click();
+});
+
+$("#start-initiative-btn").on("click", function() {
+
+})
 </script>
