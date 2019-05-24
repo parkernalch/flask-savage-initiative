@@ -1,21 +1,6 @@
 $(document).ready(function() {
     console.log('Document Ready!')
-    // $.ajax({
-    //     type: 'GET',
-    //     url: '/party',
-    //     dataType: "html",
-    //     success: function(response) {
-    //         $('#page-content').html(response);
-    //     },
-    //     error: function(e) {
-    //         alert('No Party Received');
-    //     }
-    // });
 });
-
-// $("#startInitiative").on("click", function(){
-//     alert("starting initative...")
-// });
 
 $("#submit-modal").on('click', function(){
     console.log("Modal Submit called");
@@ -29,20 +14,26 @@ $("#submit-modal").on('click', function(){
     let quick = $("input[type=radio][name=otherOptions][id=quickEdge]:checked").val() || 0;
     let hesitant = $("input[type=radio][name=otherOptions][id=hesitantHindrance]:checked").val() || 0;
     
-    let sessionID = $("#party").attr('data-sessionid');
+    // let sessionID = $("#party").attr('data-sessionid');
+    let type = 'create';
+    if (oldName != "new character"){
+        type = 'update';
+    }
 
     let json_party_member = {
+        'oldname': oldName,
         'name': charName,
         'tactician': parseInt(tactLv),
         'level_headed': parseInt(lvlHead),
         'quick': parseInt(quick),
-        'hesitant': parseInt(hesitant)
+        'hesitant': parseInt(hesitant),
+        'type': type
     };
     console.log(json_party_member);
 
     $.ajax({
         type: 'POST',
-        url: '/' + sessionID + '/party/' + oldName.replace(" ", "-").toLowerCase(),
+        url: '/encounter',
         data: JSON.stringify(json_party_member),
         dataType: 'html',
         contentType: 'application/json',
@@ -58,36 +49,44 @@ $("#submit-modal").on('click', function(){
     });
 });
 
-// $("#start-initiative-btn").on("click", function() {
+$("#delete-character-modal").on("click", function() {
+    console.log('deleting character');
+    let charname = $("#modal-charname-input").val();
+    let data = {
+        'oldname': charname,
+        'type': 'delete'
+    }
+    $.ajax({
+        url: '/encounter',
+        method: 'POST',
+        dataType: 'html',
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(response){
+            $("#page-content").html(response);
+            $("#character-modal").modal('toggle');
+        },
+        error: function() {
+            alert("Failed to delete character " + charname);
+        }
+    })
+});
 
-// });
+$("#home-navbutton").on("click", function() {
+    $.ajax({
+        url: '/home',
+        method: 'GET',
+        success: function(response){
+            $("#page-content").html(response);
+        },
+        error: function(error){
+            alert("failed to load home page");
+        }
+    });
+});
 
 $("#new-character-navbutton").on("click", function() {
-    // alert("Opening the Modal!");
-    $("#modal-charname-input").val("");
-    $("#levelHeaded0").prop('checked', true);
-    $(".lvlheadlabel0").addClass("active");
-    $("#levelHeaded1").prop('checked', false);
-    $(".lvlheadlabel1").removeClass("active");
-    $("#levelHeaded2").prop('checked', false);
-    $(".lvlheadlabel2").removeClass("active");
-
-    $("#tactician0").prop('checked', true);
-    $(".tactlabel0").addClass("active");
-    $("#tactician1").prop('checked', false);
-    $(".tactlabel1").removeClass("active");
-    $("#tactician2").prop('checked', false);
-    $(".tactlabel2").removeClass("active");
-
-    $("#noQuickHesitant").prop('checked', true);
-    $(".nonelabel").addClass("active");
-    $("#quickEdge").prop('checked', false);
-    $(".quicklabel").removeClass("active");
-    $("#hesitantHindrance").prop('checked', false);
-    $(".hesitantlabel").removeClass("active");
-    
-    console.log($("#character-modal"));
-    $("#character-modal").modal();
+    console.log("navigating to character creation");
 });
 
 $(".join-table").on('click', function(){
@@ -118,40 +117,4 @@ $(".create-table").on('click', function() {
             alert('Join Table GET failed');
         }
     });
-});
-
-$("#launch-builder-btn").on('click', function(){
-    // page content = party_list.html
-    console.log("launch builder button clicked");
-    $.ajax({
-        url: '/party',
-        type: 'GET',
-        dataType: 'html',
-        success: function(response) {
-            $("#page-content").html(response);
-        },
-        error: function(xhr, error, data){
-            console.log(error);
-        }
-    })
-});
-
-$("#launch-tables-btn").on('click', function() {
-    // page content = tables.html
-    console.log("launch tables button clicked");
-    $.ajax({
-        url: '/tables',
-        type: 'GET',
-        dataType: 'html',
-        success: function(response) {
-            $("#page-content").html(response);
-        },
-        error: function(xhr, error, data){
-            console.log(error);
-        }
-    })
-});
-
-$("#launch-character-vault-btn").on('click', function() {
-    // page content = character vault
 });
