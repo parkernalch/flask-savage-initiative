@@ -1,27 +1,76 @@
+<h2> Run a Game </h2>
 <ul class="list-group" name="tables" id="tables">
-    {% for (id, table) in tables %}
+    {% for table in tables %}
     <div class="list-group-item">
         <div class="d-flex">
-            <h4 class="mb-1">{{table.name}}</h4><br>
+            <h4 class="mb-1">{{ table.name }}</h4><br>
         </div>
         <div class="d-flex">
-            <h5 class="mb-1">{{table.description}}</h5>
+            <h5 class="mb-1">{{ table.description }}</h5>
         </div>
 
-        <button class="join-table-button" data-tableid="{{id}}">
+        <button class="run-table-button btn-primary" data-tableid="{{ table.id }}">
             <i class="fas fa-dice-d20"></i>
             Join Table
         </button>
     </div>
     {% endfor %}
+    {% if not tables %}
+    <div class="container d-flex">
+        <h4 class="mx-auto text-gray"> There doesn't seem to be anything here...</h4>
+    </div>
+    {% endif %}
 </ul>
+<br>
+<hr>
+<br>
+<h2> Join a Game </h2>
+<ul class="list-group" name="joinedtables" id="joinedtables">
+        {% for table in joinedtables %}
+        <div class="list-group-item">
+            <div class="d-flex">
+                <h4 class="mb-1">{{ table.name }}</h4><br>
+            </div>
+            <div class="d-flex">
+                <h5 class="mb-1">{{ table.description }}</h5>
+            </div>
+    
+            <button class="join-table-button btn-primary" data-tableid="{{ table.id }}">
+                <i class="fas fa-dice-d20"></i>
+                Join Table
+            </button>
+        </div>
+        {% endfor %}
+        {% if not joinedtables %}
+        <div class="container d-flex">
+            <h4 class="mx-auto"> There doesn't seem to be anything here...</h4>
+        </div>
+        {% endif %}
+    </ul>
 
 <script>
 $(".join-table-button").on('click', function() {
     let tableid = $(this).attr('data-tableid');
     // alert("table " + tableid.toString() + " clicked!");
     $.ajax({
-       url: '/table/' + tableid,
+       url: '/tables/' + tableid + '/player',
+       type: 'GET',
+       dataType: 'html',
+       success: function(response) {
+           // console.log(response);
+           $("#page-content").html(response);
+       } ,
+       error: function() {
+           alert("Table Join Failed");
+       }
+    });
+});
+
+$(".run-table-button").on('click', function() {
+    let tableid = $(this).attr('data-tableid');
+    // alert("table " + tableid.toString() + " clicked!");
+    $.ajax({
+       url: '/tables/' + tableid + '/gm',
        type: 'GET',
        dataType: 'html',
        success: function(response) {
