@@ -10,6 +10,7 @@ class Character:
     '''
     def __init__(self, name, **kwargs):
         self.name = name
+        self.active = 0
         #Tactician: draw x many extra cards and you can distribute
         self.tactician = kwargs.get('tactician', 0)
         
@@ -22,10 +23,13 @@ class Character:
         #Hesitant: Draw two cards and pick lower
         self.hesitant = kwargs.get('hesitant', 0)
 
-        self.cards = {
-            'hand': [],
-            'tactician': []
-        }
+        if 'cards' in kwargs:
+            self.cards = cards
+        else:
+            self.cards = {
+                'hand': [],
+                'tactician': []
+            }
         return
 
     def EmptyHand(self):
@@ -78,18 +82,32 @@ class Character:
         return output
 
 class Deck:
-    def __init__(self):
-        self.cards = []
+    def __init__(self, cards=None, nextIndex=None):
+        if cards is not None:
+            self.cards = cards
+        else:
+            self.cards = []
+            ## init deck
+            for suit in ['s', 'h', 'd', 'c']:
+                for i in range(2, 15):
+                    self.cards.append(f'{i}{suit}')
+            self.cards.append('15r')
+            self.cards.append('15b')
+            self.Shuffle()
 
-        ## init deck
-        for suit in ['s', 'h', 'd', 'c']:
-            for i in range(2, 15):
-                self.cards.append(f'{i}{suit}')
-        self.cards.append('15r')
-        self.cards.append('15b')
-        self.Shuffle()
+        if nextIndex is not None:
+            self.nextIndex = nextIndex
+        else:
+            self.nextIndex = 0
 
-        self.nextCard = self.cards[0]
+        self.nextCard = self.cards[self.nextIndex]
+
+    def State(self):
+        output = {
+            'cards': self.cards,
+            'nextindex': self.nextIndex,
+        }
+        return output
 
     def Shuffle(self):
         for i in range(1000):
@@ -99,15 +117,17 @@ class Deck:
             temp = self.cards[i1]
             self.cards[i1] = self.cards[i2]
             self.cards[i2] = temp
+
+        self.nextIndex = 0
+        self.nextCard = self.cards[self.nextIndex]
         return 
 
     def Deal(self):
         card = self.nextCard
-        try:
-            self.nextCard = self.cards[self.cards.index(card) + 1]
-        except IndexError:
+        self.nextIndex += 1
+        if self.nextIndex >= len(self.cards):
             self.Shuffle()
-            self.nextCard = self.cards[0]
+        self.nextCard = self.cards[self.nextIndex]
         return card
 
     def DealN(self, count):
@@ -121,21 +141,36 @@ class Deck:
         self.cards = [card] + self.cards[:ind] + self.cards[ind+1:]
         return
 
-    def Load(self, cards, nextcard):
+    def Load(self, cards, nextindex):
         self.cards = cards
-        self.nextCard = nextcard
+        self.nextIndex = nextindex
+        self.nextCard = self.cards[self.nextIndex]
         return
 
 class Initiative:
-    def __init__(self, party):
-        self.deck = Deck()
+    def __init__(self, party, deck=None, round=None, needShuffle=None):
         self.party = party
-        self.round = 0
-        self.needShuffle = False
+        # DECK ================
+        if deck is not None:
+            self.deck = deck
+        else:
+            self.deck = Deck()
+        # ROUND ===============
+        if round is not None:
+            self.round = round
+        else:
+            self.round = 0
+        # SHUFFLE ============
+        if needShuffle is not None:
+            self.needShuffle = needShuffle
+        else:
+            self.needShuffle = 0
         return
+    
     def Start(self):
         self.deck = Deck()
         return self.NextRound()
+    
     def NextRound(self, **kwargs):
         if 'round' in kwargs.keys():
             self.round = kwargs['round']
@@ -150,62 +185,78 @@ class Initiative:
         if self.needShuffle:
             #print('shuffling')
             self.deck.Shuffle()
-            self.needShuffle = False
+            self.needShuffle = 0
 
         for character in self.party:
             character.DealHand(self.deck)
             for c in character.cards['hand'] + character.cards['tactician']:
                 if c in ['15b', '15r']:
-                    self.needShuffle = True
+                    self.needShuffle = 1
         self.round += 1 
         self.InitiativeOrder()
+        for i, char in self.party:
+            if i==0:
+                char.active = 1
+            else:
+                char.active = 0
         return self.State()
+    
     def State(self):
         output = {
             "party": []
         }
-        for character in self.party:
+        self.InitiativeOrder()
+        for i, char in self.party:
+            if i==0:
+                char.active = 1
+            else:
+                char.active = 0
+        for i in range(len(self.party)):
+            character = self.party[i]
             newchar = {
                 'name': character.name,
                 'cards': character.cards,
                 'tactician': character.tactician,
                 'level_headed': character.level_headed,
                 'quick': character.quick,
-                'hesitant': character.hesitant
+                'hesitant': character.hesitant,
+                'active': character.active
             }
             output['party'].append(newchar)
-        # print('''
-        # === Round {round} ===
-        # {output}
-        # === END ===
-        # '''.format(round=self.round, output=output))
-        # output['deck'] = {
-        #     'cards': self.deck.cards,
-        #     'nextCard': self.deck.nextCard,
-        #     'needShuffle': self.needShuffle
-        # }
         output['round'] = self.round
+        output['deck'] = self.deck.State()
+        output['needshuffle'] = self.needShuffle
         return output
+    
     def SerializeParty(self):
         output = []
         for character in self.party:
             output.append(character.Get())
         return output
+    
     def InitiativeOrder(self):
         orderedparty = sorted((character for character in self.party), key=lambda x: GetCardValue(x.cards['hand'][0]), reverse=True)
+        # print([f'{character.name} with {character.cards["hand"][0]}: {GetCardValue(character.cards['hand'][0])}' for character in party])
         self.party = orderedparty
+        # print([character.name for character in self.party])
+        # for character in self.party:
+        #     print(character.name)
+        #     print(character.cards['hand'][0])
+        #     print(GetCardValue(character.cards['hand'][0]))
+        #     print('================')
         return
 
 def BuildParty(party):
     partyList = []
     for character in party:
-        partyList = AddMemberTOParty(character, partyList)
+        partyList = AddMemberToParty(character, partyList)
     return partyList
 
-def AddMemberTOParty(member, party):
+def AddMemberToParty(member, party):
     update = False
     index = -1
-    # print(member)
+    print(member)
+    print(party)
     for i, char in enumerate(party):
         if member['name'] == char.name:
             index = i
@@ -222,6 +273,9 @@ def AddMemberTOParty(member, party):
     if 'hesitant' in member.keys():
         newchar.hesitant = member['hesitant']
     
+    if 'cards' in member.keys():
+        newchar.cards = member['cards']
+
     if update and index >= 0:
         party[index] = newchar
     else:
@@ -233,42 +287,3 @@ def GetCardValue(card):
     suit = card[-1:]
     trailer = (ord(suit) - 20) / 100.0
     return value + trailer
-
-# party = [
-#     {
-#         'name': 'Sukorb',
-#         'tactician': 2
-#     },
-#     {
-#         'name': 'Cypher',
-#         'quick': 1
-#     },
-#     {
-#         'name': 'Garen'
-#     },
-#     {
-#         'name': 'Vik'
-#     },
-#     {
-#         'name': 'Soombala'
-#     },
-#     {
-#         'name': 'Klethic'
-#     },
-#     {
-#         'name': 'Bossman',
-#         'level_headed': 2,
-#         'quick': 1
-#     }
-# ]
-
-
-# P = Party(party)
-
-# init = Initiative(P)
-# init.Start()
-
-# i = input()
-# while i == '':
-#     init.NextRound()
-#     i = input()
