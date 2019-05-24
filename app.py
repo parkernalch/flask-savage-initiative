@@ -6,56 +6,15 @@ from os import urandom
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from flask_sqlalchemy import SQLAlchemy
+import datetime
 
 app  = flask.Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = urandom(24)
 # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://mHCbBr0EbK:r5BX9RsjWu@remotemysql.com:3306/mHCbBr0EbK'
 socketio = SocketIO(app)
 # db = SQLAlchemy(app)
-
-
-# class Character(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(24), default='', nullable=False)
-#     tactician = db.Column(db.Integer, default=0, nullable=False) # 0, 1, 2
-#     level_headed = db.Column(db.Integer, default=0, nullable=False) # 0, 1, 2
-#     quick = db.Column(db.Boolean, default=False, nullable=False) # True / False
-#     hesitant = db.Column(db.Boolean, default=False, nullable=False) # True / False
-#     table_id = db.Column(db.Integer) # one-to-one character <-> table
-
-#     def __init__(self, name, tactician, level_headed, quick, hesitant, table_id):
-#         self.name = name
-#         self.tactician = tactician
-#         self.level_headed = level_headed
-#         self.quick = quick
-#         self.hesitant = hesitant
-#         self.table_id = table_id
-
-# class Table(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(30))
-#     description = db.Column(db.Text)
-#     last_game = db.Column(db.DateTime)
-#     next_game = db.Column(db.DateTime)
-#     systemID = db.Column(db.Integer) # one-to-one table <-> system_id
-#     characters = db.relationship() # many-to-one relationship table -< character
-#     game_master = db.Column(db.String(24))
-#     players = db.Column(db.String(24))
-
-#     def __init__(self, name, system):
-#         self.name = name
-#         self.systemID = system
-
-# class RPGSystem(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(24)) # should be unique
-#     table_id = db.relationship('Table', backref='rpgsystem', lazy=True) # many-to-one relationship system -< table
-
-# class User(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     username = db.Column(db.String(20), unique=True)
-#     password = db.Column(db.String(200))
 
 
 party = [
@@ -249,7 +208,15 @@ def JoinTable(id):
     table = dbdict['tables'][id]
     party = table['initiative'].party
     round = table['initiative'].round
-    return render_template("initiative.html", party=party, sessionID="", tableID=id, round=round)
+    # return render_template("initiative.html", party=party, sessionID="", tableID=id, round=round)
+    return render_template('table.html', party=party, tableid=id, round=round, table=table)
+
+@app.route('/table/<id>/initiative', methods=['POST'])
+def StartInitiative(id):
+    party = dbdict['tables'][id]['initiative'].party
+    tableid = id
+    round = dbdict['tables'][id]['initiative'].round
+    return render_template("initiative.html", party=party, tableid=id, round=round)
 
 @app.route('/table/<id>/next', methods=['GET'])
 def next_round(id):
@@ -270,7 +237,7 @@ def next_round(id):
 def handle_next_round(data):
     print('Going to next round in room {}'.format(data['room']))
     # print(emit('go to next', room=data['room']))
-    emit('go to next', room=data['room'])
+    emit('go to next', party=data['party'] room=data['room'])
 
 @socketio.on('join')
 def handle_join_event(data):
@@ -287,6 +254,10 @@ def handle_leave_event(data):
     leave_room(room)
     print(username + ' has left room {}'.format(room))
     # send(username + ' has left the room.', room=room, callback=ack)
+
+@socketio.on('start initiative in room')
+def handle_initiative_start(data):
+    emit('start initiative', room=data['room'])
 
 @app.route('/tables', methods=['GET', 'POST'])
 def tables():
