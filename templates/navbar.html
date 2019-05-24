@@ -6,28 +6,35 @@
     
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
+        <li class="nav-item">
             <a class="nav-link" href="#" id="home-navbutton">Home <span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="new-character-navbutton" href="#">New Character</a>
         </li>
-        <li class="nav-item dropdown">
+        <!-- <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Tables
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
             <button class="dropdown-item join-table">Join Table</button>
             <button class="dropdown-item create-table">Create Table</button>
+        </li> -->
+        <li class="nav-item">
+            <a class="nav-link disabled" href="#" id="tables-navbutton">Tables</a>
         </li>
         <li class="nav-item">
             <a class="nav-link disabled" href="#">Character Vault</a>
         </li>
+        <li class="nav-item" style="display: none" id="account-navbutton">
+            <a class="nav-link" href="#">Account</a>
+        </li>
         </ul>
         
         <div class="nav-item dropdown">
-            <button class="btn btn-primary dropdown-toggle" id='loginDropdown' role="button" data-toggle='dropdown' aria-haspopup="true" aria-expanded="false">
-                Login
+            <button class="btn btn-primary dropdown-toggle" id='loginDropdown' role="button" data-toggle='dropdown' aria-haspopup="true" aria-expanded="false" value="Log In">
+                <span class="spinner-border spinner-border-sm" id="navbar-login-spinner" role="status" aria-hidden="true" style="display:none"></span>
+                Log In
             </button>
             <div class="dropdown-menu dropdown-menu-right p-4">
                 
@@ -55,6 +62,97 @@ $("#navbar-hamburger").on("click", function() {
         } else {
             circlebutton.css("top", "240px");
         }
+    }
+});
+
+$("#navbar-login-button").on("click", function(){
+    var username = $("#login-username").val();
+    var password = $("#login-password").val();
+
+    var login_token = {
+        username: username,
+        password: password
+    }
+
+    if($(this).hasClass("btn-danger")){
+        // Run Logout instead
+        $.ajax({
+           url: '/logout',
+           method: 'POST',
+           data: JSON.stringify(login_token),
+           contentType: 'application/json',
+           dataType: 'html',
+           success: function(response) {
+                console.log(response);
+                $("#welcome-message").html("You are not logged in");
+                $("#loginDropdown").removeClass("btn-success").addClass("btn-primary");
+                $("#loginDropdown").html('Login');
+                $("#navbar-login-button").removeClass("btn-danger").addClass("btn-primary");
+                $("#navbar-login-button").html('Login');
+                $("#account-navbutton").css("display", "none");
+                $("#login-username").val("");
+                $("#login-password").val("");
+                $("#tables-navbutton").addClass("disabled");
+                $("#new-character-navbutton").addClass("disabled");
+           },
+           error: function(error){
+
+           }
+        });
+    } else {
+        // $("#navbar-login-spinner").css("display", "block");
+        $("#loginDropdown").html('<span class="spinner-border spinner-border-sm" role="status"></span> Logging In...');
+        $.ajax({
+            url: '/login',
+            method: 'POST',
+            data: JSON.stringify(login_token),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(response){
+                // alert(response);
+                $("#welcome-message").html("Welcome, " + response.displayname);
+                $("#loginDropdown").removeClass("btn-primary").addClass("btn-success");
+                $("#loginDropdown").html('Log Out');
+                $("#navbar-login-button").removeClass("btn-primary").addClass("btn-danger");
+                $("#navbar-login-button").html('Log Out');
+                $("#account-navbutton").css("display", "block");
+                $("#tables-navbutton").removeClass("disabled");
+                $("#new-character-navbutton").removeClass("disabled");
+                // $("#navbar-login-spinner").css("display", "none");
+            },
+            error: function(err) {
+                alert("Post request failed for /login");
+            }
+        })
+    }
+});
+
+$("#new-character-navbutton").addClass("disabled");
+
+$("#tables-navbutton").on('click', function() {
+    console.log("launch tables button clicked");
+      $.ajax({
+          url: '/tables',
+          type: 'GET',
+          dataType: 'html',
+          success: function(response) {
+              $("#page-content").html(response);
+          },
+          error: function(xhr, error, data){
+              console.log(error);
+          }
+      })
+});
+
+$(document).ready(function() {
+    console.log("{{user}}");
+    if( "{{ user }}" != "None" ) {
+        $("#welcome-message").html("Welcome, " + "{{user}}");
+        $("#loginDropdown").removeClass("btn-primary").addClass("btn-success");
+        $("#loginDropdown").html('Log Out');
+        $("#navbar-login-button").removeClass("btn-primary").addClass("btn-danger");
+        $("#navbar-login-button").html('Log Out');
+        $("#tables-navbutton").removeClass("disabled");
     }
 });
 </script>
