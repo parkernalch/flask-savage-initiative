@@ -1,0 +1,20 @@
+- After tactician gives all cards away
+    - Need 'no cards left' image to display
+
+- On next round (in encounter/initiative)
+    - if hand is already displayed, should stay that way, not collapse
+
+- Tactician distribution doesn't work after round has advanced
+
+- Need 'working' animation for login processing
+
+- Needs new character entry screen
+
+- Properly filter tables
+
+- implement cloud storage for character image storage and recall
+
+- Build character vault to view and edit all characters associated with your user
+
+- Build table/initiative that utilizes socketio for room-wide initiative tracking
+
