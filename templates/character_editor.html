@@ -58,7 +58,16 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="submit-modal">Save changes</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" id="dismiss-modal">Close</button>
+                <button type="button" disabled aria-disabled="true" class="btn btn-danger" id="delete-character-modal">
+                    <span class="fas fa-trash"></span>
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+$("#character-modal").on('shown.bs.modal', function() {
+    $("#modal-charname-input").focus();
+});
+</script>
