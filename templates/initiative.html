@@ -1,86 +1,86 @@
-<div class="d-flex">
-    <h3 class="mx-auto">Initiative Order: Round {{round}}</h3>
-</div>
-<ul class="list-group" name="initiative-list" id="initiative-list" data-tableid={{tableID}}>
-    {% for member in party %}
-    {% if member == party[0] %}
+<script>
+var initiative = {{ initiative|safe }};
+console.log("{{party|safe}}");
+console.log(initiative);
+</script>
+
+<h4 class="mr-1">Initiative Order: Round {{round}}</h4>
+
+<ul class="mx-auto list-group" name="initiative-list" id="initiative-list">
+    {% for i in range(party|length) %}
+    {% if loop.first %}
     <div class="list-group-item active first-item">
     {% endif %}
 
-    {% if member == party[-1] %}
+    {% if loop.last %}
     <div class="list-group-item last-item">
     {% endif %}
 
-    {% if member != party[0] and member != party[-1] %}
+    {% if not loop.first and not loop.last %}
     <div class="list-group-item">
     {% endif %}
 
     <div class="d-flex">
             <h4 class="mb-1">
-                {% if sessionID != '' %}
-                <button class="btn btn-secondary view-character-button" data-charname="{{member.name}}">
+                <button class="btn btn-primary view-character-button" data-charname="{{party[i].name}}">
                     <i class="fas fa-address-card"></i>
                 </button>
-                {% endif %}
-
-                {% if tableID != '' %}
-                <button class="btn btn-primary view-character-button" data-charname="{{member.name}}">
-                    <i class="fas fa-address-card"></i>
+                {{party[i].name}}
+                <button class="btn text-danger mb-1 ml-0 btn-sm kill-character-button" data-charname="{{party[i].name}}">
+                    <i class="fas fa-skull-crossbones"></i>
                 </button>
-                {% endif %}
-                {{member.name}}
             </h4>
             <h6 class="ml-auto">
-                {% if member.tactician == 1 %}
+                {% if party[i].tactician == 1 %}
                 <span class="badge badge-pill badge-primary">Tactician</span>
                 {% endif %}
 
-                {% if member.tactician == 2 %}
+                {% if party[i].tactician == 2 %}
                 <span class="badge badge-pill badge-primary">Battle Master</span>
                 {% endif %}
 
-                {% if member.level_headed == 1 %}
+                {% if party[i].level_headed == 1 %}
                 <span class="badge badge-pill badge-secondary">Lvl. Headed</span>
                 {% endif %}
 
-                {% if member.level_headed == 2 %}
+                {% if party[i].level_headed == 2 %}
                 <span class="badge badge-pill badge-secondary">Imp. Lvl. Headed</span>
                 {% endif %}
 
-                {% if member.quick > 0 %}
+                {% if party[i].quick > 0 %}
                 <span class="badge badge-pill badge-success">Quick</span>
                 {% endif %}
 
-                {% if member.hesitant > 0 %}
+                {% if party[i].hesitant > 0 %}
                 <span class="badge badge-pill badge-warning">Info</span>
                 {% endif %}
             </h6>
             <br>
         </div>
 
-        <a class="btn btn-secondary btn-sm ml-5 hand-toggler" href="#cards-in-hand-{{member.name.replace(' ','-').lower()}}" type="button" data-toggle="collapse">
+        <a class="btn btn-secondary btn-sm ml-5 hand-toggler" href="#cards-in-hand-{{party[i].name.replace(' ','-').lower()}}" type="button" data-toggle="collapse">
             <i class="collapse show fas fa-chevron-right"></i>
             View Hand
         </a>
 
-        {% if member.tactician > 0 %}
-        <a class="btn btn-secondary btn-sm ml-5 tactician-toggler" href="#cards-in-tactician-{{member.name.replace(' ','-').lower()}}" type="button" data-toggle="collapse">
+        {% if party[i].tactician > 0 %}
+        <a class="btn btn-secondary btn-sm ml-5 tactician-toggler" href="#cards-in-tactician-{{party[i].name.replace(' ','-').lower()}}" type="button" data-toggle="collapse">
             <i class="collapse show fas fa-chevron-right"></i>
             Tactician Cards
         </a>
         {% endif %}
 
         <div class="d-flex">
-            {% if member == party[0] %}
-            <div class="collapse show p-2" id="cards-in-hand-{{member.name.replace(' ','-').lower()}}">
+            {% if party[i] == party[0] %}
+            <div class="collapse show p-2" id="cards-in-hand-{{party[i].name.replace(' ','-').lower()}}">
             {% endif %}
             
-            {% if member != party[0] %}
-            <div class="collapse p-2" id="cards-in-hand-{{member.name.replace(' ','-').lower()}}">
+            {% if party[i] != party[0] %}
+            <div class="collapse p-2" id="cards-in-hand-{{party[i].name.replace(' ','-').lower()}}">
             {% endif %}
 
-                <div class="d-flex">
-                    {% for card in member.cards.hand %}
+                <div class="d-flex standard-hand">
+                    {% for card in party[i].cards.hand %}
                     <div class="p-1">
                         <img src= {{ url_for('static', filename = 'assets/{}.png'.format(card)) }} width="64" height="96">
                     </div>
@@ -88,55 +88,124 @@
                 </div>   
             </div>
 
-            <div class="collapse p-2" id="cards-in-tactician-{{member.name.replace(' ','-').lower()}}">
-                <div class="d-flex">
-                    {% for card in member.cards.tactician %}
-                    <div class="p-1">
+            {% if party[i].tactician > 0 %}
+            <div class="collapse p-2 tactician-hand" id="cards-in-tactician-{{party[i].name.replace(' ','-').lower()}}">
+                <div class="d-flex align-items-center">
+                    {% for card in party[i].cards.tactician %}
+                    <button 
+                        class="p-1 btn btn-default tactician-card" 
+                        data-cardname="{{card}}" 
+                        >
                         <img src= {{ url_for('static', filename = 'assets/{}.png'.format(card)) }} width="64" height="96">
-                    </div>
+                    </button>
                     {% endfor %}
+                    <div class="p-2"></div>
+                    <div class="input-group mr-1">
+                        <select class="custom-select character-select" id="character-select">
+                            <option selected>Choose Character...</option>
+                            {% for otherchar in party %}
+                                {% if otherchar.name != party[i].name %}
+                                <option value="{{otherchar.name}}">{{otherchar.name}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" id="btn-give-tactician" type="button" data-charname="{{ party[i].name }}">GIVE</button>
+                        </div>
+                    </div>
                 </div>   
             </div>
+            {% endif %}
         </div>
     </div>
     {% endfor %}
 </ul>
 
 <div class="d-flex">
-    <button class="btn btn-primary ml-auto" name="next-round" id="next-round-btn">Next Round</button>
+    <button class="btn btn-primary mx-auto py-1 px-5" name="next-round" id="next-round-btn">Next Round</button>
 </div>
 
 <script>
 $(document).ready(function() {
-    console.log("websocket connecting...");
+    console.log("initiative ready");
     
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    $(".tactician-card").on('click', function(){
+        $(".tactician-card").not(this).removeClass("active");
     
-    socket.on('connect', function() {
-        console.log("I'm Connected");
-        socket.emit('my event', {data: 'I\'m connected!'});
-        let randomID = '';
-        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i=0; i < 6; i++){
-            randomID += characters.charAt(Math.floor(Math.random() * charactersLength));
+        if(!$(this).hasClass("active")) {
+            $(this).addClass("active");
+        } else {
+            $(this).removeClass("active");
         }
-        let roomData = {
-            room: $("#initiative-list").attr("data-tableid"),
-            username: randomID
-        };
-        socket.emit('join', roomData);
     });
 
-    socket.on('go to next', function(){
-        console.log('go to next received from socket');
-        advanceInitiative("socket");
+    function delegateTactician(player){
+        console.log("giving card");
+        var giveCard = $(".tactician-card").filter(".active").first().attr('data-cardname');
+        // var fromPlayer = $(this).attr("data-charname");
+        var fromPlayer = player;
+        var toPlayer = $("#character-select").val();
+        console.log("Give " + giveCard + " from " + fromPlayer + " to " + toPlayer);
+        if(toPlayer === "Choose Character..."){
+            return
+        }
+
+        // var playerObject = null;
+        for(character of initiative['party']){
+            if(character.name === toPlayer){
+                character['cards']['hand'].unshift(giveCard);
+            } else if (character.name === fromPlayer){
+                for(var i=0; i < character['cards']['tactician'].length; i++){
+                    if(character['cards']['tactician'][i] === giveCard){
+                        character['cards']['tactician'].splice(i, 1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        let data = {
+            party: initiative['party'],
+            round: initiative['round'],
+            initiative: initiative,
+            deck: initiative['deck'],
+            needshuffle: initiative['needshuffle']
+        };
+
+        console.log("Give " + giveCard + " to " + toPlayer);
+        $.ajax({
+            url: '/encounter/initiative/update',
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'html',
+            data: JSON.stringify(data),
+            success: function(response){
+                $("#page-content").html(response);
+            },
+            error: function(err){
+                alert("Tactician assignment failed");
+            }
+        });
+        return
+    }
+
+    console.log("setting on click handler");
+    console.log($("#btn-give-tactician").on('click'));
+    $("#btn-give-tactician").on('click', function(){
+        let player = $(this).attr("data-charname");
+        console.log("give tactician button clicked");
+        delegateTactician(player); 
     });
+    $(this).prop('disabled', false);
+    console.log($("#btn-give-tactician").on('click'));
+
+    
 
     $("#next-round-btn").on('click', function(){
-        // advanceInitiative("button");
-        socket.emit('next round', { room: $("#initiative-list").attr("data-tableid") });
+        advanceInitiative("encounter");
+        // socket.emit('next round', { room: $("#initiative-list").attr("data-tableid") });
     });
+    console.log($(".next-round-btn-card").on('click'));
 
     function advanceInitiative(origin){
         let current = $("#initiative-list").children(".active");
@@ -160,16 +229,42 @@ $(document).ready(function() {
             });
         }
         else{
-            $.ajax({
-                url: "/table/" + $("#initiative-list").attr("data-tableid") + '/next',
-                type: 'GET',
-                success: function(response){ 
-                    $("#page-content").html(response);
-                },
-                error: function() {
-                    alert('Next Round Failed');
-                }
-            });
+            data = {
+                party: initiative.party,
+                deck: initiative.deck,
+                round: initiative.round,
+                needshuffle: initiative.needshuffle
+            }
+
+            if(origin == "encounter"){
+                $.ajax({
+                    url: "/encounter/initiative/next",
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    dataType: 'html',
+                    success: function(response){ 
+                        $("#page-content").html(response);
+                    },
+                    error: function() {
+                        alert('Next Round Failed');
+                    }
+                });
+            } else if(origin == "socket"){
+                $.ajax({
+                    url: "/encounter/initiative/next",
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json',
+                    dataType: 'html',
+                    success: function(response){
+                        $("#table-content").html(response);
+                    },
+                    error: function(){
+                        alert("Failed to get next round");
+                    }
+                })
+            }         
         }
     }
 
