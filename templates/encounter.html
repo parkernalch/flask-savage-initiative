@@ -1,0 +1,201 @@
+<script>
+var party = {{ party|safe }};
+console.log(party);
+</script>
+
+<style>
+.badge-tactician{
+    background-color: orange;
+    color: white;
+}
+.badge-quick{
+    background-color: yellow;
+}
+.badge-level_headed{
+    background-color:cornflowerblue;
+}
+.badge-hesitant{
+    background-color: crimson;
+}
+</style>
+<button class="btn btn-default btn-primary" id="btn-start-initiative">Start Initiative</button>
+<div class="container mx-auto mt-2 mb-2">
+    <button class="btn bg-primary btn-circle text-light newchar-navbtn" id="circle-newchar-top">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <ul class="list-group encounter-list" name="encounter-list" id="encounter-list">
+            {% for member in party %}
+            <div class="list-group-item my-2 encounter-member d-flex" id="member-{{ member.name.replace(' ','') }}">
+                <h4 class="mb-1">
+                    <button class="btn btn-secondary edit-character-button" data-charname="{{member.name}}">
+                        <i class="fas fa-address-card"></i>
+                    </button>
+                    {{member.name}}
+                </h4>
+                <h6 class="ml-auto badge-container">
+                </h6>
+                <br>
+            </div>
+        {% endfor %}
+    </ul>
+    
+    <button class="btn btn-default btn-circle bg-primary text-light newchar-footer" id="circle-newchar-bottom">
+        <i class="fas fa-plus"></i>
+    </button>
+</div>
+    
+<script>
+    $(document).ready(function() {
+        console.log("encounters ready");
+
+        $("#new-character-navbutton").removeClass("disabled");
+
+        for(var i in party){
+            let member = party[i];
+
+            for(const key of Object.keys(member)){
+                if (key === 'name' || key === 'oldname' || key === 'type'){
+                    continue;
+                } else {
+                    if(member[key] > 0 || member[key] === true){
+                        var badgespan = document.createElement('span');
+                        badgespan.setAttribute("class", "badge badge-pill badge-" + key.toString());
+                        badgespan.innerHTML = key;
+                        $("#member-" + member.name.split(' ').join('')).children(".badge-container").append(badgespan);
+                    }
+                }
+                // badges.appendChild(badgespan);
+            }
+        }
+
+        $(".edit-character-button").on('click', function() {
+            let charname = $(this).attr('data-charname');
+            $("#character-modal").attr('data-oldname', charname);
+            
+            var charindex = -1;
+            for (var i=0; i<party.length; i++){
+                if (party[i].name === charname ){
+                    charindex = i;
+                    break;
+                }
+            }
+
+            let character = party[charindex];
+
+            // Fill Modal
+            // -name
+            $("#modal-charname-input").val(character.name);
+
+            // -tactician
+            var tactlevel = character.tactician || 0;
+            for (var t=0; t<3; t++){
+                let query = "#tactician" + t.toString();
+                let query2 = ".tactlabel" + t.toString();
+
+                if(t === tactlevel){
+                    $(query).prop('checked', true);
+                    $(query2).addClass('active');
+                } else {
+                    $(query).prop('checked', false);
+                    $(query2).removeClass('active');
+                }
+            }
+            
+            // -level_headed
+            var lvlheadlevel = character.level_headed || 0;
+            for (var l=0; l<3; l++){
+                let query = "#levelHeaded" + l.toString();
+                let query2 = ".lvlheadlabel" + l.toString();
+                if(l === lvlheadlevel){
+                    $(query).prop('checked', true);
+                    $(query2).addClass("active");
+                } else {
+                    $(query).prop('checked', false);
+                    $(query2).removeClass("active");
+                }
+            }
+
+            // quick/hesitant
+            if(character.quick > 0){
+                $("#quickEdge").prop('checked', true);
+                $(".quicklabel").addClass("active");
+                $("#hesitantHindrance").prop('checked', false);
+                $(".hesitantlabel").removeClass("active");
+                $("#noQuickHesitant").prop('checked', false);
+                $(".nonelabel").removeClass("active");
+            } else if (character.hesitant > 0) {
+                $("#quickEdge").prop('checked', false);
+                $(".quicklabel").removeClass("active");
+                $("#hesitantHindrance").prop('checked', true);
+                $(".hesitantlabel").addClass("active");
+                $("#noQuickHesitant").prop('checked', false);
+                $(".nonelabel").removeClass("active");
+            } else {
+                $("#quickEdge").prop('checked', false);
+                $(".quicklabel").removeClass("active");
+                $("#hesitantHindrance").prop('checked', false);
+                $(".hesitantlabel").removeClass("active");
+                $("#noQuickHesitant").prop('checked', true);
+                $(".nonelabel").addClass("active");
+            }
+            $("#delete-character-modal").prop('disabled', false);
+            $("#character-modal").modal();
+        });
+
+        $("#circle-newchar-top").on("click", function() {
+            console.log("top circle button clicked");
+            // $("#new-character-navbutton").click();
+            OpenModal();
+        });
+
+        $("#circle-newchar-bottom").on("click", function() {
+            console.log("bottom circle button clicked");
+            // $("#new-character-navbutton").click();
+            OpenModal();
+        });
+
+        function OpenModal(){
+            $("#character-modal").attr("data-oldname", "");
+            $("#modal-charname-input").val("");
+            $("#levelHeaded0").prop('checked', true);
+            $(".lvlheadlabel0").addClass("active");
+            $("#levelHeaded1").prop('checked', false);
+            $(".lvlheadlabel1").removeClass("active");
+            $("#levelHeaded2").prop('checked', false);
+            $(".lvlheadlabel2").removeClass("active");
+
+            $("#tactician0").prop('checked', true);
+            $(".tactlabel0").addClass("active");
+            $("#tactician1").prop('checked', false);
+            $(".tactlabel1").removeClass("active");
+            $("#tactician2").prop('checked', false);
+            $(".tactlabel2").removeClass("active");
+
+            $("#noQuickHesitant").prop('checked', true);
+            $(".nonelabel").addClass("active");
+            $("#quickEdge").prop('checked', false);
+            $(".quicklabel").removeClass("active");
+            $("#hesitantHindrance").prop('checked', false);
+            $(".hesitantlabel").removeClass("active");
+            
+            // console.log($("#character-modal"));
+            $("#delete-character-modal").prop('disabled', true);
+            $("#character-modal").modal();
+        }
+    
+        $("#btn-start-initiative").on("click", function(){
+            $.ajax({
+                url: '/encounter/initiative/start',
+                method: 'GET',
+                dataType: 'html',
+                success: function(response){
+                    $("#page-content").html(response);
+                },
+                error: function(err) {
+                    alert(err);
+                }
+            });
+        });
+    });
+</script>
