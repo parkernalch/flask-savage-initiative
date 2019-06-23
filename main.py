@@ -2,6 +2,7 @@ import flask
 from cards import *
 from flask import request, jsonify, render_template, redirect, url_for, session, g
 from os import urandom
+import os
 import random, string
 # from werkzeug.security import check_password_hash, generate_password_hash
 from flask_socketio import SocketIO, join_room, leave_room, send, emit, rooms
@@ -20,7 +21,9 @@ socketio = SocketIO(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://mHCbBr0EbK:r5BX9RsjWu@remotemysql.com:3306/mHCbBr0EbK'
 # db = SQLAlchemy(app)
 
-r = redis.Redis(decode_responses=True)
+# r = redis.Redis(decode_responses=True)
+r = redis.from_url(os.environ.get("REDIS_URL"))
+r.config(decode_responses=True)
 r.flushall()
 
 # @app.route('/login', methods=['GET', 'POST'])
