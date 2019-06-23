@@ -219,7 +219,7 @@ def createTable():
     # newTableID = str(uuid.uuid4())
     newTableID = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
     if 'user' not in session:
-        return
+        return url_for('index')
 
     user = session['user']
 
