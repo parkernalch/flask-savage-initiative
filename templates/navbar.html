@@ -54,68 +54,6 @@ $("#navbar-hamburger").on("click", function() {
     }
 });
 
-$("#navbar-login-button").on("click", function(){
-    var username = $("#login-username").val();
-    var password = $("#login-password").val();
-
-    var login_token = {
-        username: username,
-        password: password
-    }
-
-    if($(this).hasClass("btn-danger")){
-        // Run Logout instead
-        $.ajax({
-           url: '/logout',
-           method: 'POST',
-           data: JSON.stringify(login_token),
-           contentType: 'application/json',
-           dataType: 'html',
-           success: function(response) {
-                console.log(response);
-                $("#welcome-message").html("You are not logged in");
-                $("#loginDropdown").removeClass("btn-success").addClass("btn-primary");
-                $("#loginDropdown").html('Login');
-                $("#navbar-login-button").removeClass("btn-danger").addClass("btn-primary");
-                $("#navbar-login-button").html('Login');
-                $("#account-navbutton").css("display", "none");
-                $("#login-username").val("");
-                $("#login-password").val("");
-                $("#tables-navbutton").addClass("disabled");
-                $("#new-character-navbutton").addClass("disabled");
-           },
-           error: function(error){
-
-           }
-        });
-    } else {
-        // $("#navbar-login-spinner").css("display", "block");
-        $("#loginDropdown").html('<span class="spinner-border spinner-border-sm" role="status"></span> Logging In...');
-        $.ajax({
-            url: '/login',
-            method: 'POST',
-            data: JSON.stringify(login_token),
-            contentType: 'application/json',
-            dataType: 'json',
-            success: function(response){
-                // alert(response);
-                $("#welcome-message").html("Welcome, " + response.displayname);
-                $("#loginDropdown").removeClass("btn-primary").addClass("btn-success");
-                $("#loginDropdown").html('Log Out');
-                $("#navbar-login-button").removeClass("btn-primary").addClass("btn-danger");
-                $("#navbar-login-button").html('Log Out');
-                $("#account-navbutton").css("display", "block");
-                $("#tables-navbutton").removeClass("disabled");
-                $("#new-character-navbutton").removeClass("disabled");
-                // $("#navbar-login-spinner").css("display", "none");
-            },
-            error: function(err) {
-                alert("Post request failed for /login");
-            }
-        })
-    }
-});
-
 $("#start-initiative-navbutton").on("click", function(){
     $.ajax({
         url: '/encounter/initiative/start',
@@ -172,11 +110,5 @@ $("#create-table-navbutton").on("click",function(){
 
 $(document).ready(function() {
     console.log("{{user}}");
-    if( "{{ user }}" != "None" ) {
-        $("#loginDropdown").removeClass("btn-primary").addClass("btn-success");
-        $("#loginDropdown").html('Log Out');
-        $("#navbar-login-button").removeClass("btn-primary").addClass("btn-danger");
-        $("#navbar-login-button").html('Log Out');
-    }
 });
 </script>
