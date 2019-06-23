@@ -98,8 +98,8 @@ $(document).ready(function() {
             if(character.active > 0){
                 newchar.addClass("active");
 
-                $("#current-character-header").html("ACTIVE CHARACTER: " + character.name);
-                
+                $("#current-character-header").html("ACTIVE CHARACTER:");
+                $("#current-char-name").html(character.name);
                 GetPortrait(character);
 
                 LoadInitiativeCards(character);
@@ -138,7 +138,8 @@ $(document).ready(function() {
         }
 
         let newCharacter = jsonResponse.party[activeIndex];
-        $("#current-character-header").html("ACTIVE CHARACTER: " + newCharacter.name);
+        $("#current-character-header").html("ACTIVE CHARACTER:");
+        $("#current-char-name").html(newCharacter.name);
 
         let onDeckChildren = $("#on-deck-list li");
         for(let li of onDeckChildren){
