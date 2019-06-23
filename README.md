@@ -1,5 +1,7 @@
 # Savage Initiative
+
 [Check it out!](https://swinit.herokuapp.com)
+
 Using the rules from Savage Worlds RPG by Pinnacle Entertainment Group (PEG), this site stores and tracks characters and monsters through initiative. 
 Unlike d20-based systems like Pathfinder and Dungeons & Dragons, Savage Worlds uses a deck of 54 playing cards (including jokers).
 
