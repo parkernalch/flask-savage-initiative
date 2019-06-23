@@ -22,8 +22,7 @@ socketio = SocketIO(app)
 # db = SQLAlchemy(app)
 
 # r = redis.Redis(decode_responses=True)
-r = redis.from_url(os.environ.get("REDIS_URL"))
-r.config(decode_responses=True)
+r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 r.flushall()
 
 # @app.route('/login', methods=['GET', 'POST'])
