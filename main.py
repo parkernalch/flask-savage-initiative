@@ -1,21 +1,27 @@
 import flask
 from cards import *
 from flask import request, jsonify, render_template, redirect, url_for, session, g
-import uuid
 from os import urandom
+import random, string
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_socketio import SocketIO, join_room, leave_room, send, emit, rooms
 from flask_sqlalchemy import SQLAlchemy
 import models as m
 import json
+import redis
 
 app  = flask.Flask(__name__)
 app.config['DEBUG'] = True
+
 app.config['SECRET_KEY'] = urandom(24)
+socketio = SocketIO(app)
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://mHCbBr0EbK:r5BX9RsjWu@remotemysql.com:3306/mHCbBr0EbK'
 db = SQLAlchemy(app)
-socketio = SocketIO(app)
+
+r = redis.Redis(decode_responses=True)
+r.flushall()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -54,10 +60,20 @@ def index():
     user = None
     if 'user' in session:
         print('user in session')
-        queriedUser = m.User.query.filter(m.User.username == session['user']).first()
-        user = queriedUser.displayname
+        # queriedUser = m.User.query.filter(m.User.username == session['user']).first()
+        # user = queriedUser.displayname
     # display homepage
-    print('user not in session')
+    else:
+        print('user not in session')
+        user = ''.join(random.choices(string.ascii_letters, k=10))
+        session['user'] = user
+
+    if 'encounter' in session:
+        encounter = {
+                'party': []
+            }
+        session['encounter'] = encounter
+
     return render_template('layout.html', user=user)
 
 @app.route('/home', methods=['GET'])
@@ -71,6 +87,18 @@ def home():
         user = None
         print('user not in session ::home::')
     return render_template('home.html', user=user)
+
+@app.route('/encounter/load', methods=['POST'])
+def loadEncounter():
+    print('loading encounter from localstorage')
+    loadedParty = request.get_json()
+    party = loadedParty['party']
+
+    encounter = {
+        'party': party
+    }
+    session['encounter'] = encounter
+    return render_template("encounter.html", party=session['encounter']['party'])
 
 @app.route('/encounter', methods=['GET', 'POST'])
 def encounter():
@@ -101,14 +129,13 @@ def encounter():
             party.append(modalChar)
 
         # session['encounter']['party'] = party
-        encounter = session['encounter']
+        # encounter = session['encounter']
         encounter = {
             'party': party
         }
         session['encounter'] = encounter
         # print(session['encounter']['party'])
         return render_template("encounter.html", party=session['encounter']['party'])
-        
 
     # GET
     if 'encounter' in session:
@@ -131,7 +158,7 @@ def encounterInitiative():
     party = session['encounter']['party']
     # print('Found and Built party:')
     initParty = BuildParty(party)
-    # print(initParty)
+    print(initParty)
 
     initiative = Initiative(initParty)
     initiative.Start()
@@ -166,86 +193,319 @@ def encounterInitiativeUpdate():
 
     return render_template("initiative.html", party=initiative['party'], round=initiative['round'], initiative=initiative)
 
-@app.route('/tables', methods=['GET', 'POST'])
-def tables():
-    # POST
-    # Can only get to tables if signed in
-    if 'user' not in session:
-        return redirect(url_for('home'))
-    user = session['user'] # username
-    queriedUser = m.User.query.filter(m.User.username == user).first()
+def UpdateRedisInitiative(id, nextround=True):
+    fetchID = id[-6:]
+    party = FetchPartyByID(fetchID)
+    deck = FetchDeckByID(fetchID)
+    round = int(FetchRoundByID(fetchID))
+    init = Initiative(
+        party,
+        Deck(deck['cards'], int(deck['nextindex'])),
+        round,
+        deck['needshuffle']
+    )
+    if nextround:
+        print("getting next round")
+        init.NextRound()
+
+    # Add Party to Redis cache under key of newTableID
+    truncID = id[-6:]
     
-    ownedTableQuery = m.Gametable.query.filter(m.Gametable.gamemaster_id == queriedUser.id)
-    ownedTables = [{'id': table.id, 'name': table.name, 'description': table.description } for table in ownedTableQuery]
+    # SET PARTY
+    
+    r.delete(f"{truncID}:party")
+    for i, char in enumerate(init.State()['party']):
+        r.sadd(f"{truncID}:party", char['name'])
 
-    joinedTableQuery = m.Gametable.query.all()
-    # print(joinedTableQuery)
-    joinedTables = [{'id': table.id, 'name': table.name, 'description': table.description } for table in joinedTableQuery]
-    # print(joinedTables)
-    if request.method == 'POST':
-        req_data = request.get_json()
-        # request data in the form:
-        # req_data = {
-        # 'table-name': tablename,
-        # 'party': party (from encounter),
-        # 'table-description': description
-        # }
-        # create new table
-        # display list of tables
-        return render_template("tables.html", tables=ownedTables, joinedtables=joinedTables)
+        prefix = f"{truncID}:{char['name']}"
+        # hesitant
+        r.set(f"{prefix}:hesitant", char['hesitant'])
+        # level_headed
+        r.set(f"{prefix}:level_headed", char['level_headed'])
+        # quick
+        r.set(f"{prefix}:quick", char['quick'])
+        # tactician
+        r.set(f"{prefix}:tactician", char['tactician'])
+        # Ordinal
+        r.set(f"{prefix}:ordinal", str(i))
+        # Active
+        r.set(f"{prefix}:active", char['active'])
+        
+        # Cards
+        ## Hand
+        r.delete(f"{prefix}:cards:hand")
+        for card in char['cards']['hand']:
+            r.sadd(f"{prefix}:cards:hand", card)
+        ## Tactician
+        r.delete(f"{prefix}:cards:tactician")
+        for card in char['cards']['tactician']:
+            r.sadd(f"{prefix}:cards:tactician", card)
+    
+    # SET DECK
+    r.delete(f"{truncID}:deck")
+    for ind, card in enumerate(init.State()['deck']['cards']):
+        pair = { f'{card}': ind }
+        r.zadd(f"{truncID}:deck", pair)
+    
+    r.set(f"{truncID}:deck:nextindex", init.State()['deck']['nextindex'])
+    # SET ROUND
+    r.set(f"{truncID}:round", init.State()['round'])
 
-    # GET
-    # display list of available tables
-    return render_template("tables.html", tables=ownedTables, joinedtables=joinedTables)
+    # SET NEEDSHUFFLE
+    r.set(f"{truncID}:deck:need_shuffle", init.State()['needshuffle'])
+    return
 
-@app.route('/tables/<id>/gm')
-def gm_table(id):
-    print(id)
-    queryTable = m.Gametable.query.filter(m.Gametable.id == id).first()
-    tableObject = m.tableToDict(queryTable)
+@app.route('/tables/create', methods=['GET', 'POST'])
+def createTable():
+    # newTableID = str(uuid.uuid4())
+    newTableID = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+    if 'user' not in session:
+        return
 
-    return render_template('table.html', table=tableObject, user=session['user'])
+    user = session['user']
 
-@app.route('/tables/<id>/player')
-def player_table(id):
-    print(id)
-    queryTable = m.Gametable.query.filter(m.Gametable.id == id).first()
-    tableObject = m.tableToDict(queryTable)
+    if request.method == 'GET':
+        # return redirect(url_for("index"))
+        print('GETTING CREATE TABLE')
+    else:
+        print('POSTING CREATE TABLE')
+        party = request.get_json()['party']
+        # print(party)
 
-    return render_template('table.html', table=tableObject, user=session['user'])
+        initParty = BuildParty(party)
+        init = Initiative(initParty)
+        init.Start()
+        # r.set(newTableID, str(party))
+        # Add Party to Redis cache under key of newTableID
+        truncID = newTableID[-6:]
+        # print(init.State()['party'])
+        # SET PARTY
+        r.set(f"{truncID}:owner", user)
+        for i, char in enumerate(init.State()['party']):
+            r.sadd(f"{truncID}:party", char['name'])
 
-@app.route('/tables/<id>/initiative', methods=['GET'])
-def tableInitiative(id):
-    queryTable = m.Gametable.query.filter(m.Gametable.id == id).first()
-    tableObject = m.tableToDict(queryTable)
-    # print(tableObject)
-    party = queryTable.characters
-    partyObject = [m.charToDict(character) for character in party]
-    print(partyObject)
-    initParty = BuildParty(partyObject)
+            prefix = f"{truncID}:{char['name']}"
+            # hesitant
+            r.set(f"{prefix}:hesitant", char['hesitant'])
+            # level_headed
+            r.set(f"{prefix}:level_headed", char['level_headed'])
+            # quick
+            r.set(f"{prefix}:quick", char['quick'])
+            # tactician
+            r.set(f"{prefix}:tactician", char['tactician'])
+            # Ordinal
+            r.set(f"{prefix}:ordinal", str(i))
+            # Active
+            r.set(f"{prefix}:active", char['active'])
+            
+            # PORTRAIT
+            # Icon
+            r.set(f"{prefix}:icon", char['icon'])
+            # Color
+            r.set(f"{prefix}:color", char['color'])
 
-    initiative = Initiative(initParty)
-    initiative.Start()
+            # Cards
+            ## Hand
+            for card in char['cards']['hand']:
+                r.sadd(f"{prefix}:cards:hand", card)
+            ## Tactician
+            for card in char['cards']['tactician']:
+                r.sadd(f"{prefix}:cards:tactician", card)
+        # SET DECK
+        for ind, card in enumerate(init.State()['deck']['cards']):
+            pair = { f'{card}': ind }
+            r.zadd(f"{truncID}:deck", pair)
+        r.set(f"{truncID}:deck:nextindex", init.State()['deck']['nextindex'])
+        # SET ROUND
+        r.set(f"{truncID}:round", init.State()['round'])
+        # SET INDEX
+        r.set(f"{truncID}:round:index", 0)
+
+        # SET NEEDSHUFFLE
+        r.set(f"{truncID}:deck:need_shuffle", init.State()['needshuffle'])
+
+    return newTableID
+
+def FetchPartyByID(id):
+    partySet = r.smembers(f"{id[-6:]}:party")
+    # print(partySet)
+    if not partySet:
+        return None
+
+    parsedParty = []
+    for member in partySet:
+        prefix = f"{id[-6:]}:{member}"
+        char = {
+            'name': member,
+            'hesitant': int(r.get(f"{prefix}:hesitant")),
+            'quick': int(r.get(f"{prefix}:quick")),
+            'level_headed': int(r.get(f"{prefix}:level_headed")),
+            'tactician': int(r.get(f"{prefix}:tactician")),
+            'ordinal': int(r.get(f"{prefix}:ordinal")),
+            'active': int(r.get(f"{prefix}:active")),
+            'icon': r.get(f"{prefix}:icon"),
+            'color': r.get(f"{prefix}:color")
+        }
+        cards = {
+            'hand': [card for card in r.smembers(f"{prefix}:cards:hand")],
+            'tactician': [card for card in r.smembers(f"{prefix}:cards:tactician")]
+        }
+        char['cards'] = cards
+        parsedParty.append(char)
+
+    orderedParty = sorted(parsedParty, key=lambda x: x['ordinal'])
+    builtParty = BuildParty(orderedParty)
+    # print([(char['name'], char['cards']['hand']) for char in orderedParty])
+    return builtParty
+
+def FetchDeckByID(id):
+    cards = [card for card in r.zrange(f"{id[-6:]}:deck", 0, -1)]
+    nextindex = r.get(f"{id[-6:]}:deck:nextindex")
+    needshuffle = r.get(f"{id[-6:]}:deck:needshuffle")
+
+    deck = {
+        'cards': cards,
+        'nextindex': nextindex,
+        'needshuffle': needshuffle
+    }
+
+    return deck
+
+def FetchRoundByID(id):
+    rd = r.get(f"{id[-6:]}:round")
+    return rd
+
+def FetchIndexByID(id):
+    ind = r.get(f"{id[-6:]}:round:index")
+    return int(ind)
+
+def SetRedisActiveIndex(id, ind):
+    r.set(f"{id[-6:]}:round:index", ind)
+    return
+
+@app.route('/redis/index/increment/<id>')
+def IncrementIndex(id):
+    ind = FetchIndexByID(id) + 1
+    SetRedisActiveIndex(id, ind)
+    response = {
+        'index': ind
+    }
+    return jsonify(response) 
+
+@app.route('/initiative/<id>/json/<rd>')
+def jsonInitiative(id, rd):
+    redisRound = FetchRoundByID(id)
+    ind = FetchIndexByID(id)
+    # SetRedisActiveIndex(id, ind)
+    # print(f"The type of rd is {type(rd)}")
+    # print(f"The type of redisRound is {type(redisRound)}")
+    # print(f"fetching round {rd}; last round in Redis: {redisRound}")
+    if int(rd) > int(FetchRoundByID(id)):
+        UpdateRedisInitiative(id)
+        SetRedisActiveIndex(id, 0)
+        ind = 0
+
+    fetchID = id[-6:]
+    party = FetchPartyByID(fetchID)
+    deck = FetchDeckByID(fetchID)
+    round = int(FetchRoundByID(fetchID))
+    initiative = Initiative(
+        party,
+        Deck(deck['cards'], int(deck['nextindex'])),
+        round,
+        deck['needshuffle']
+    )
 
     state = initiative.State()
+    for char in state['party']:
+        char['active'] = 0
+    state['party'][ind]['active'] = 1
+    
+    # print(ind)
+    # print([(character['name'], character['active']) for character in initiative.State()['party']])
 
-    # return render_template("initiative.html", party=state['party'], round=state['round'], initiative=state)
-    return render_template("table_initiative.html", party=state['party'], round=state['round'], initiative=state)
+    # print(state)
+    return jsonify(state)
+
+@app.route('/tables/gm/<id>')
+def gmTable(id):
+    print('getting gm table...')
+    if 'user' not in session:
+        return redirect(url_for('index'))
+    
+    tableOwner = r.get(f"{id[-6:]}:owner")
+    if tableOwner != session['user']:
+        return redirect(url_for('index'))
+
+    return render_template("gm_table.html", gameid=id)
+
+@app.route('/tables/check/<id>')
+def checkID(id):
+    print(f'checking id: {id}' )
+    if FetchRoundByID(id[-6:]) is not None:
+        print('found active game')
+        fetchedParty = FetchPartyByID(id)
+        party = [char.name for char in fetchedParty]
+        status = 'ok'
+    else:
+        print('no active game')
+        party = 'none'
+        status = 'error'
+    response = {
+        'status': status,
+        'party': party
+    }
+    return jsonify(response)
+
+@app.route('/tables/givecard', methods=['POST'])
+def giveCard():
+    req = request.get_json()
+    # print("GIVE CARD REQUEST:")
+    # print(req)
+
+    c1 = req['origin']
+    c2 = req['destination']
+    card = req['card']
+    id = req['id']
+
+    r.srem(f"{id[-6:]}:{c1['name']}:cards:tactician", card)
+    r.sadd(f"{id[-6:]}:{c2['name']}:cards:hand", card)
+
+    UpdateRedisInitiative(id, False)
+
+    return 'ok'
+
+@app.route('/tables/join/<id>/<charname>')
+def joinTable(id, charname):
+    # print(id)
+    ind = int(FetchIndexByID(id))
+    return render_template("player_table.html", gameid=id, currentIndex=ind, charname=charname)
 
 @socketio.on('join')
 def handle_join(data):
+    print('joining...')
+    # if 'user' not in session:
+    #     return
+    # username = session['user']
+    # queriedUser = m.User.query.filter(m.User.username == username).first()
+    # userObject = m.userToDict(queriedUser)
+    print(data)
+    room = data['room']
     if 'user' not in session:
         return
-    username = session['user']
-    queriedUser = m.User.query.filter(m.User.username == username).first()
-    # userObject = m.userToDict(queriedUser)
 
-    room = data['room']
-    if room not in rooms():
+    username = session['user']
+
+    for existingRoom in rooms(request.sid):
+        leave_room(existingRoom)
+
+    if room not in rooms(request.sid):
         join_room(room)
 
-    print(username + ' has entered room {} as {}.'.format(room, queriedUser.displayname))
-    emit('message to room', {'message': '{} has joined as {}'.format(username, queriedUser.displayname), 'user': ""}, room=room)
+    print(rooms(request.sid))
+
+    print(f'{username} has entered room {room}.')
+    # emit('message to room', {'message': '{} has joined.'.format(username), 'user': "SYS"}, room=room)
     return
 
 @socketio.on('message in room')
@@ -265,13 +525,16 @@ def handle_leave(data):
     # leave room with id = data['room']
     # remove username (or displayname) from list of active players in room
     # if no users remain, destroy room
-    username = data['username']
+    if 'user' not in session:
+        return
+
+    username = session['user']
     # queriedUser = m.User.query.filter(m.User.username == username).first()
 
     room = data['room']
     leave_room(room)
-    print(username + ' has left room {}'.format(room))
-    emit('message to room', {'message': '{} has left room {}'.format(username, room), 'user': ""}, room=room)
+    print(f'{username} has left room {room}')
+    # emit('message to room', {'message': '{} has left room {}'.format(username, room), 'user': ""}, room=room)
     return
 
 @socketio.on('start initiative in room')
@@ -283,118 +546,43 @@ def handle_initiative_start(data):
 def handle_next(data):
     # if data has new party list (new round), then display new round
     # if not, advance the active element to next
+    
+    queryTable = m.Gametable.query.filter(m.Gametable.id == data['id']).first()
+    # tableObject = m.tableToDict(queryTable)
+    # print(tableObject)
+    party = queryTable.characters
+    partyObject = [m.charToDict(character) for character in party]
+    print(partyObject)
+    initParty = BuildParty(partyObject)
+
+    initiative = Initiative(initParty)
+    initiative.NextRound()
+
+    state = initiative.State()
+
+    # return render_template("table_initiative.html", party=state['party'], round=state['round'], initiative=state)
+    packet = {
+        'initiative': state,
+        'round': state['round'],
+        'party': state['party']
+    }
+    emit('next round', packet, room=data['room'])
     return
 
-@socketio.on('update player view')
+@socketio.on('update view')
 def handle_update(data):
-    # data should contain some key that I can use to indicate which type of change
-    # - Wound
-    # - Shaken
-    # - Dazed
-    # - etc.
-    # Update the player view accordingly
+    emit('update', data, broadcast=True)
     return
 
-@app.route('/vault', methods=['GET', 'POST'])
-def vault():
-    # POST
-    # take character object and write to localstorage
-    # display list of available characters
-    # GET
-    # display list of available characters
-    return None
+@socketio.on('advance round')
+def handle_advance(index):
+    emit('advance', index, broadcast=True)
+    return
 
-
-
-
-# @app.route('/initiative', methods=['GET'])
-# def initiative():
-#     sessionID = request.cookies.get('InitiativeSession')
-#     if not sessionID:
-#         return redirect(url_for('set_cookie'))
-
-#     party = dbdict[sessionID]['party']
-#     dbdict[sessionID]['initiative'] = Initiative(BuildParty(party))
-#     dbdict[sessionID]['initiative'].Start()
-#     # req_data = request.get_json()
-#     return dbdict[sessionID]['initiative'].State() 
-
-
-# @app.route('/table/<id>', methods=['GET'])
-# def JoinTable(id):
-#     # renders player-side initiative page
-#     # print('starting /table/<id> for id={}'.format(id))
-#     if id not in dbdict['tables'].keys():
-#         return redirect(url_for('tables'))
-#     dbdict['tables'][id]['initiative'].Start()
-#     table = dbdict['tables'][id]
-#     party = table['initiative'].party
-#     round = table['initiative'].round
-#     # return render_template("initiative.html", party=party, sessionID="", tableID=id, round=round)
-#     return render_template('table.html', party=party, tableid=id, round=round, table=table)
-
-# @app.route('/table/<id>/initiative', methods=['POST'])
-# def StartInitiative(id):
-#     party = dbdict['tables'][id]['initiative'].party
-#     tableid = id
-#     round = dbdict['tables'][id]['initiative'].round
-#     return render_template("initiative.html", party=party, tableid=id, round=round)
-
-# @app.route('/table/<id>/next', methods=['GET'])
-# def next_round(id):
-#     if id not in dbdict['tables'].keys():
-#         return redirect(url_for('tables'))
-
-#     round = dbdict['tables'][id]['initiative'].round
-#     if round == 0:
-#         return redirect(url_for('JoinTable'))
-
-#     round += 1
-#     initiative = dbdict['tables'][id]['initiative']
-#     dbdict['tables'][id]['initiative'].NextRound()
-#     party = dbdict['tables'][id]['initiative'].party
-#     return render_template("initiative.html", party=party, sessionID="", tableID=id, round=round)
-
-# @socketio.on('next round')
-# def handle_next_round(data):
-#     print('Going to next round in room {}'.format(data['room']))
-#     # print(emit('go to next', room=data['room']))
-#     emit('go to next', party=data['party'], room=data['room'])
-
-# @socketio.on('join')
-# def handle_join_event(data):
-#     username = data['username']
-#     room = data['room']
-#     join_room(room)
-#     print(username + ' has entered room {}'.format(room))
-#     # send(username + ' has entered the room.', room=room, callback=ack)
-
-# @socketio.on('leave')
-# def handle_leave_event(data):
-#     username = data['username']
-#     room = data['room']
-#     leave_room(room)
-#     print(username + ' has left room {}'.format(room))
-#     # send(username + ' has left the room.', room=room, callback=ack)
-
-# @socketio.on('start initiative in room')
-# def handle_initiative_start(data):
-#     emit('start initiative', room=data['room'])
-
-# @app.route('/tables', methods=['GET', 'POST'])
-# def tables():
-#     if request.method == 'POST':
-#         tableID = str(uuid.uuid4())
-#         while tableID in dbdict['tables'].keys():
-#             tableID = str(uuid.uuid4())
-#         dbdict['tables'][tableID] = {
-#             'initiative': None,
-#             'name': 'new table',
-#             'members': []
-#         }
-
-#     tables = [(id, table) for id, table in dbdict['tables'].items()]
-#     return render_template("tables.html", tables=tables)
+@socketio.on("refresh view")
+def handle_refresh():
+    emit("refresh", broadcast=True)
+    return
 
 if __name__ == "__main__":
     # app.run()

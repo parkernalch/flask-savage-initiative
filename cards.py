@@ -10,7 +10,7 @@ class Character:
     '''
     def __init__(self, name, **kwargs):
         self.name = name
-        self.active = 0
+        self.active = kwargs.get('active', 0)
         #Tactician: draw x many extra cards and you can distribute
         self.tactician = kwargs.get('tactician', 0)
         
@@ -22,6 +22,9 @@ class Character:
 
         #Hesitant: Draw two cards and pick lower
         self.hesitant = kwargs.get('hesitant', 0)
+
+        self.color = kwargs.get('color', 'black')
+        self.icon = kwargs.get('icon', 'fas fa-user')
 
         if 'cards' in kwargs:
             self.cards = cards
@@ -77,9 +80,21 @@ class Character:
             'level_headed': self.level_headed,
             'quick': self.quick,
             'hesitant': self.hesitant,
-            'cards': self.cards
+            'cards': self.cards,
+            'icon': self.icon,
+            'color': self.color
         }
         return output
+
+    def MaxCard(self):
+        maxCard = self.cards['hand'][0]
+        maxVal = GetCardValue(maxCard)
+        for card in self.cards['hand']:
+            newVal = GetCardValue(card)
+            if newVal > maxVal:
+                maxCard = card
+                maxVal = newVal
+        return maxVal
 
 class Deck:
     def __init__(self, cards=None, nextIndex=None):
@@ -194,7 +209,7 @@ class Initiative:
                     self.needShuffle = 1
         self.round += 1 
         self.InitiativeOrder()
-        for i, char in self.party:
+        for i, char in enumerate(self.party):
             if i==0:
                 char.active = 1
             else:
@@ -206,7 +221,7 @@ class Initiative:
             "party": []
         }
         self.InitiativeOrder()
-        for i, char in self.party:
+        for i, char in enumerate(self.party):
             if i==0:
                 char.active = 1
             else:
@@ -220,7 +235,9 @@ class Initiative:
                 'level_headed': character.level_headed,
                 'quick': character.quick,
                 'hesitant': character.hesitant,
-                'active': character.active
+                'active': character.active,
+                'icon': character.icon,
+                'color': character.color
             }
             output['party'].append(newchar)
         output['round'] = self.round
@@ -235,7 +252,8 @@ class Initiative:
         return output
     
     def InitiativeOrder(self):
-        orderedparty = sorted((character for character in self.party), key=lambda x: GetCardValue(x.cards['hand'][0]), reverse=True)
+        # orderedparty = sorted((character for character in self.party), key=lambda x: max( GetCardValue(x.cards['hand'][0]) for card in x.cards['hand']), reverse=True)
+        orderedparty = sorted((character for character in self.party), key=lambda x: x.MaxCard(), reverse=True)
         # print([f'{character.name} with {character.cards["hand"][0]}: {GetCardValue(character.cards['hand'][0])}' for character in party])
         self.party = orderedparty
         # print([character.name for character in self.party])
@@ -255,8 +273,8 @@ def BuildParty(party):
 def AddMemberToParty(member, party):
     update = False
     index = -1
-    print(member)
-    print(party)
+    # print(member)
+    # print(party)
     for i, char in enumerate(party):
         if member['name'] == char.name:
             index = i
@@ -272,7 +290,14 @@ def AddMemberToParty(member, party):
         newchar.level_headed = member['level_headed']
     if 'hesitant' in member.keys():
         newchar.hesitant = member['hesitant']
-    
+    if 'active' in member.keys():
+        newchar.active = member['active']
+
+    if 'color' in member.keys():
+        newchar.color = member['color']
+    if 'icon' in member.keys():
+        newchar.icon = member['icon']
+
     if 'cards' in member.keys():
         newchar.cards = member['cards']
 

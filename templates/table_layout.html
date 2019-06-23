@@ -21,26 +21,17 @@
   </head>
   <body>
         {% include "navbar.html" %}
-        {% include "join_table.html" %}
-        <p class="user-welcome" id="welcome-message" style="display: none">
-          {% if user %}
-          Welcome, {{ user }}!
-          {% endif %}
-
-          {% if not user %}
-          You are not logged in.
-          {% endif %}
-        </p>
-
         {% include "character_editor.html" %}
+        {% include "tactician_modal.html" %}
 
-        <div class="page-content" name="page-content" id='page-content'>
-          <!-- {% include "encounter.html" %} -->
+        <div class="table-content" name="table-content" id='table-content' data-gameid="{{gameid}}">
+          {% block content %}
+          {% endblock %}
         </div>
 
     <!-- Optional JavaScript -->
     <script src="{{ url_for('static', filename='scripts/popper.min.js') }}"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="{{ url_for('static',filename='scripts/home.js') }}"></script>
+    <script src="{{ url_for('static',filename='scripts/table.js') }}"></script>
 </body>
 </html>

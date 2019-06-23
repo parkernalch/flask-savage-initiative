@@ -1,37 +1,26 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#">Savage Initiative Tracker</a>
+    <a class="navbar-brand" id="navbar-brand" href="/">Savage Initiative Tracker</a>
     <button class="navbar-toggler" type="button" id="navbar-hamburger" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
-            <a class="nav-link" href="#" id="home-navbutton">Home <span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" id="new-character-navbutton" href="#">New Character</a>
-        </li>
-        <!-- <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Tables
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <button class="dropdown-item join-table">Join Table</button>
-            <button class="dropdown-item create-table">Create Table</button>
-        </li> -->
-        <li class="nav-item">
-            <a class="nav-link disabled" href="#" id="tables-navbutton">Tables</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link disabled" href="#">Character Vault</a>
-        </li>
-        <li class="nav-item" style="display: none" id="account-navbutton">
-            <a class="nav-link" href="#">Account</a>
-        </li>
+            <li class="nav-item">
+                <button class="btn btn-success" id="start-initiative-navbutton" disabled>
+                    Start Initiative
+                </button>
+            </li>
+            <div class="nav-spacer" style="width:50px"></div>
+            <li class="nav-item">
+                <a href="" class="nav-link" id="create-table-navbutton">Create Table</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" id="join-table-navbutton">Join Table</a>
+            </li>
         </ul>
         
-        <div class="nav-item dropdown">
+        <!-- <div class="nav-item dropdown">
             <button class="btn btn-primary dropdown-toggle" id='loginDropdown' role="button" data-toggle='dropdown' aria-haspopup="true" aria-expanded="false" value="Log In">
                 <span class="spinner-border spinner-border-sm" id="navbar-login-spinner" role="status" aria-hidden="true" style="display:none"></span>
                 Log In
@@ -49,7 +38,7 @@
                     <button class="btn btn-outline-primary" id="navbar-signup-button">Sign Up</button>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 </nav>
 
@@ -127,32 +116,65 @@ $("#navbar-login-button").on("click", function(){
     }
 });
 
-$("#new-character-navbutton").addClass("disabled");
-
-$("#tables-navbutton").on('click', function() {
-    console.log("launch tables button clicked");
-      $.ajax({
-          url: '/tables',
-          type: 'GET',
-          dataType: 'html',
-          success: function(response) {
-              $("#page-content").html(response);
-          },
-          error: function(xhr, error, data){
-              console.log(error);
-          }
-      })
+$("#start-initiative-navbutton").on("click", function(){
+    $.ajax({
+        url: '/encounter/initiative/start',
+        method: 'GET',
+        dataType: 'html',
+        success: function(response){
+            $("#page-content").html(response);
+        },
+        error: function(xhr, status, err){
+            console.log("ERROR: ", status);
+        }
+    })
 });
+
+$("#create-table-navbutton").on("click",function(){
+    let data = {
+        party: JSON.parse(localStorage.getItem("party"))
+    };
+
+    $.ajax({
+        url: '/tables/create',
+        method: 'POST',
+        contentType: 'application/json',
+        dataType: 'text',
+        data: JSON.stringify(data),
+        success: function(response){
+            window.location.href = '/tables/gm/' + response;
+            // $("html").html(response);
+        },
+        error: function(xhr, status, err){
+            console.log("Failed to create table: ", err);
+        }
+    });
+});
+
+// $("#join-table-navbutton").on("click", function() {
+//     var id = 0;
+
+//     $.ajax({
+//         url: '/tables/join/' + id.toString(),
+//         method: 'GET',
+//         dataType: 'html',
+//         success: function(response){
+//             window.location.href = '/tables/join/' + id.toString();
+//             // $(document).html(response);
+//         },
+//         error: function(xhr, status, err){
+//             console.log("Failed to Join Table " + id.toString() + " :", err);
+//         }
+//     });
+// });
 
 $(document).ready(function() {
     console.log("{{user}}");
     if( "{{ user }}" != "None" ) {
-        $("#welcome-message").html("Welcome, " + "{{user}}");
         $("#loginDropdown").removeClass("btn-primary").addClass("btn-success");
         $("#loginDropdown").html('Log Out');
         $("#navbar-login-button").removeClass("btn-primary").addClass("btn-danger");
         $("#navbar-login-button").html('Log Out');
-        $("#tables-navbutton").removeClass("disabled");
     }
 });
 </script>

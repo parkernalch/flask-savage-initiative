@@ -1,6 +1,9 @@
 <script>
+
 var party = {{ party|safe }};
-console.log(party);
+var jsonParty = JSON.stringify(party);
+localStorage.setItem('party', jsonParty);
+
 </script>
 
 <style>
@@ -18,7 +21,7 @@ console.log(party);
     background-color: crimson;
 }
 </style>
-<button class="btn btn-default btn-primary" id="btn-start-initiative">Start Initiative</button>
+
 <div class="container mx-auto mt-2 mb-2">
     <button class="btn bg-primary btn-circle text-light newchar-navbtn" id="circle-newchar-top">
         <i class="fas fa-plus"></i>
@@ -28,8 +31,8 @@ console.log(party);
             {% for member in party %}
             <div class="list-group-item my-2 encounter-member d-flex" id="member-{{ member.name.replace(' ','') }}">
                 <h4 class="mb-1">
-                    <button class="btn btn-secondary edit-character-button" data-charname="{{member.name}}">
-                        <i class="fas fa-address-card"></i>
+                    <button class="btn edit-character-button" data-charname="{{member.name}}">
+                        <i class="{{member.icon}} {{member.color}}"></i>
                     </button>
                     {{member.name}}
                 </h4>
@@ -47,7 +50,8 @@ console.log(party);
     
 <script>
     $(document).ready(function() {
-        console.log("encounters ready");
+        console.log("Encounter Loaded");
+        $("#start-initiative-navbutton").prop("disabled", false);
 
         $("#new-character-navbutton").removeClass("disabled");
 
@@ -80,10 +84,31 @@ console.log(party);
                     break;
                 }
             }
+            let profile = $(this).find("i").attr("class");
+            let splitProfile = profile.split(' ');
+            let colors = ['red', 'orange', 'green', 'blue', 'violet', 'light-gray', 'dark-gray', 'black'];
+
+            let charicon = "fas fa-user";
+            let charcolor = "black";
+
+            for(var i=0; i < splitProfile.length; i++){
+                if(colors.includes(splitProfile[i])){
+                    charcolor = splitProfile[i];
+                    splitProfile.splice(i, 1).toString();
+                    charicon = splitProfile[0] + " " + splitProfile[1];
+                    break;
+                }
+            }
+            console.log("charcolor: ", charcolor);
+            console.log("charicon: ", charicon);
 
             let character = party[charindex];
 
             // Fill Modal
+            // -Profile Icon
+            $("#modal-portrait-icon").attr("class", "mx-auto " + charicon + " " + charcolor);
+            // - Profile Color
+            
             // -name
             $("#modal-charname-input").val(character.name);
 
@@ -181,6 +206,10 @@ console.log(party);
             
             // console.log($("#character-modal"));
             $("#delete-character-modal").prop('disabled', true);
+
+            $("#modal-portrait-icon").attr("class", "mx-auto fas fa-user black");
+            $("#modal-portrait-icon").data("icon", "fas fa-user");
+            $("#modal-portrait-icon").data("color", "black");
             $("#character-modal").modal();
         }
     

@@ -1,0 +1,16 @@
+deaf || deaf
+band-aid || damaged
+battery-empty || out of PP
+biohazard || poisoned
+low-vision|| blind
+bolt || quickened
+fire || on fire
+comment-slash || mute
+dizzy || unconscious
+flushed || surprised
+heart-broken || wounded
+heartbeat || stabilized
+radiation || irradiated?
+running || speed
+shield-alt || defending
+skull || dead

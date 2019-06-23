@@ -1,0 +1,55 @@
+{% extends "table_layout.html" %}
+
+{% block content %}
+<div class="container d-flex">
+    <h3 class="mx-auto" id="current-round-h3">Current Round:</h3>
+</div>
+
+<hr>
+
+<div class="container d-flex" id="gm-view-container">
+    <div class="container" id="gm-view-active-stats">
+        <h5 id="current-character-header">ACTIVE CHARACTER:</h5>
+        <div class="character-portrait" id="character-portrait"></div>
+        <div class="attribute-container"></div>
+    </div>
+
+    <div class="container" id="gm-view-active-cards">
+        <h5>CARDS IN HAND</h5>
+        <div class="card-container" id="active-cards-in-hand"></div>
+        <hr>
+        <h5>TACTICIAN CARDS</h5>
+        <div class="tactician-container" id="tactician-cards-in-hand"></div>
+    </div>
+
+    <div class="container" id="gm-view-on-deck-list">
+        <h5>ON DECK</h5>
+        <ul class="on-deck-list" id="on-deck-list">
+
+        </ul>
+        <button id="gm-next-round">NEXT</button>
+    </div>
+</div>
+
+<hr>
+
+<!-- <div class="container d-flex">
+    <h3 class="mx-auto">GM UTILITIES:</h3>
+</div>
+
+<div class="container d-flex" id="gm-utilities">
+    <div class="container p-2" id="gm-utilities-list">
+        <ul id="list-of-utilities">
+            <div class="utility-item">Table Overview</div>
+            <div class="utility-item">Dice Roller</div>
+            <div class="utility-item">Power Lookup</div>
+            <div class="utility-item">Adventure Cards</div>
+            <div class="utility-item">Rule Lookup</div>
+        </ul>
+    </div>
+    <div class="container p-2" id="utility-view">
+
+    </div>
+</div> -->
+
+{% endblock %}

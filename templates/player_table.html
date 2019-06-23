@@ -1,0 +1,56 @@
+{% extends "table_layout.html" %}
+
+{% block content %}
+<script>
+$("#start-initiative-navbutton").css("display", "none");
+$("#create-table-navbutton").css("display", "none");
+$("#join-table-navbutton").css("display", "none");
+</script>
+
+<div class="container d-flex">
+    <h3 class="mx-auto" id="current-round-h3">Current Round:</h3>
+</div>
+
+<hr>
+
+<div class="container d-flex" id="gm-view-container">
+    <div class="container" id="gm-view-active-stats">
+        <h5 id="current-character-header">ACTIVE CHARACTER:</h5>
+        <div class="character-portrait" id="character-portrait"></div>
+        <div class="attribute-container"></div>
+    </div>
+
+    <div class="container" id="gm-view-active-cards">
+        <h5>CARDS IN HAND</h5>
+        <div class="card-container" id="active-cards-in-hand"></div>
+        <hr>
+        <h5>TACTICIAN CARDS</h5>
+        <div class="tactician-container" id="tactician-cards-in-hand"></div>
+    </div>
+
+    <div class="container" id="gm-view-on-deck-list">
+        <h5>ON DECK</h5>
+        <ul class="on-deck-list" id="on-deck-list">
+
+        </ul>
+    </div>
+</div>
+
+<hr>
+
+<div class="container d-flex">
+    <h3 class="mx-auto">{{charname}}</h3>
+</div>
+
+<div class="container d-flex" id="player-utilities">
+    <div class="container" id="player-hand-container" data-character="{{charname}}">
+        <label>Cards in Hand:</label>
+        <div class="container" id="player-cards-in-hand"></div>
+        <label>Tactician Cards:</label>
+        <div class="container" id="player-tact-in-hand"></div>
+    </div>
+
+    <div class="container" id="utility-view">
+    </div>
+</div>
+{% endblock %}

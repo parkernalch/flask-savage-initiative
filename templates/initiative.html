@@ -1,7 +1,7 @@
 <script>
 var initiative = {{ initiative|safe }};
-console.log("{{party|safe}}");
-console.log(initiative);
+// console.log("PARTY: {{party|safe}}");
+//console.log(initiative);
 </script>
 
 <h4 class="mr-1">Initiative Order: Round {{round}}</h4>
@@ -22,8 +22,8 @@ console.log(initiative);
 
     <div class="d-flex">
             <h4 class="mb-1">
-                <button class="btn btn-primary view-character-button" data-charname="{{party[i].name}}">
-                    <i class="fas fa-address-card"></i>
+                <button class="btn view-character-button" data-charname="{{party[i].name}}">
+                    <i class="{{party[i].icon}} {{party[i].color}}"></i>
                 </button>
                 {{party[i].name}}
                 <button class="btn text-danger mb-1 ml-0 btn-sm kill-character-button" data-charname="{{party[i].name}}">
@@ -189,23 +189,17 @@ $(document).ready(function() {
         return
     }
 
-    console.log("setting on click handler");
-    console.log($("#btn-give-tactician").on('click'));
     $("#btn-give-tactician").on('click', function(){
         let player = $(this).attr("data-charname");
         console.log("give tactician button clicked");
         delegateTactician(player); 
     });
-    $(this).prop('disabled', false);
-    console.log($("#btn-give-tactician").on('click'));
-
-    
+    $(this).prop('disabled', false);    
 
     $("#next-round-btn").on('click', function(){
         advanceInitiative("encounter");
         // socket.emit('next round', { room: $("#initiative-list").attr("data-tableid") });
     });
-    console.log($(".next-round-btn-card").on('click'));
 
     function advanceInitiative(origin){
         let current = $("#initiative-list").children(".active");

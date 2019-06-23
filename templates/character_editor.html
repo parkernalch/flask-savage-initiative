@@ -8,6 +8,77 @@
                 </button>
             </div>
             <div class="modal-body">
+                <div class="character-portrait d-flex">
+                    <i class="fas fa-user mx-auto" id="modal-portrait-icon"></i>
+                </div>
+
+                <div class="spacer" style="height: 10px"></div>
+                
+                <div class="container d-flex portrait-picker-buttons">
+                    <div class="mx-auto">
+                        <button class="btn btn-outline-primary portrait-icon-button" id="btn-icon-picker" data-toggle="collapse" href="#icon-options" aria-expanded="false" aria-controls="icon-options">
+                        Choose Icon
+                        </button>
+                        <button class="btn btn-outline-primary portrait-color-button" id="btn-portrait-color" data-toggle="collapse" href="#color-options" aria-expanded="false" aria-controls="color-options">
+                        Choose Color
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="collapse icon-options" id="icon-options">
+                    <a href="#" class="icon-grid-item" data-icon="fa-anchor"><i class="fas fa-anchor"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-atom"><i class="fas fa-atom"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-black-tie"><i class="fab fa-black-tie"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-book-dead"><i class="fas fa-book-dead"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-bomb"><i class="fas fa-bomb"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-bug"><i class="fas fa-bug"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-chess-bishop"><i class="fas fa-chess-bishop"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-chess-king"><i class="fas fa-chess-king"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-chess-knight"><i class="fas fa-chess-knight"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-chess-pawn"><i class="fas fa-chess-pawn"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-chess-queen"><i class="fas fa-chess-queen"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-chess-rook"><i class="fas fa-chess-rook"></i></a>
+
+                    <a href="#" class="icon-grid-item" data-icon="fa-beer"><i class="fas fa-beer"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-code"><i class="fas fa-code"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-cog"><i class="fas fa-cog"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-crosshairs"><i class="fas fa-crosshairs"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-crown"><i class="fas fa-crown"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-dice"><i class="fas fa-dice"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-leaf"><i class="fas fa-leaf"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-fist-raised"><i class="fas fa-fist-raised"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-hat-wizard"><i class="fas fa-hat-wizard"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-key"><i class="fas fa-key"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-mask"><i class="fas fa-mask"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-music"><i class="fas fa-music"></i></a>
+
+                    <a href="#" class="icon-grid-item" data-icon="fa-paw"><i class="fas fa-paw"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-plus-circle"><i class="fas fa-plus-circle"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-power-off"><i class="fas fa-power-off"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-radiation"><i class="fas fa-radiation"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-robot"><i class="fas fa-robot"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-snowflake"><i class="fas fa-snowflake"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-syringe"><i class="fas fa-syringe"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-theater-masks"><i class="fas fa-theater-masks"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-utensils"><i class="fas fa-utensils"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-wine-bottle"><i class="fas fa-wine-bottle"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-wrench"><i class="fas fa-wrench"></i></a>
+                    <a href="#" class="icon-grid-item" data-icon="fa-yin-yang"><i class="fas fa-yin-yang"></i></a>
+                </div>
+
+                <div class="collapse color-options" id="color-options">
+                    <button href="#" class="color-button red" data-color="red"></button>
+                    <button href="#" class="color-button orange" data-color="orange"></button>
+                    <button href="#" class="color-button green" data-color="green"></button>
+                    <button href="#" class="color-button blue" data-color="blue"></button>
+                    <button href="#" class="color-button violet" data-color="violet"></button>
+                    <button href="#" class="color-button light-gray" data-color="light-gray"></button>
+                    <button href="#" class="color-button dark-gray" data-color="dark-gray"></button>
+                    <button href="#" class="color-button black" data-color="black"></button>
+                </div>
+
+                <div class="spacer" style="height: 10px"></div>
+
                 <div class="d-flex">
                     <label class="mb-1" for="character-modal-charname">Name</label>
                     <input class="ml-3 form-control" type=text name="character-modal-charname" id="modal-charname-input">

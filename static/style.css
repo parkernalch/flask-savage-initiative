@@ -4,6 +4,7 @@ html, body{
 
 .page-content{
     height: 100%;
+    padding: 40px;
 }
 
 .btn-circle {
@@ -34,4 +35,102 @@ html, body{
 
 .tactician-card.active {
     background-color: silver;
+}
+.party-character{
+    color: slategray;
+}
+.party-character.active{
+    color: gray;
+    text-decoration: line-through;
+}
+.party-character.next{
+    color: coral;
+}
+.character-portrait{
+    font-size: 100px;
+    border-width: 1px;
+    border-color: black;
+}
+.on-deck-list{
+    list-style: none;
+}
+.on-deck-character.active{
+    color: green;
+    font-weight: bold;
+}
+
+.initiative-card{
+    background: transparent;
+}
+.icon-options{
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto auto auto auto auto auto auto;
+    font-size: 30px;
+}
+.color-options{
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto auto auto;
+}
+.color-button{
+    border-radius: 5px;
+    width: 40px;
+    height: 20px;
+    border-style: none;
+    padding: 20px;
+}
+.color-button.red{
+    background: red;
+}
+.fas.red{
+    color: red;
+}
+.color-button.orange{
+    background: orange;
+}
+.fas.orange{
+    color: orange;
+}
+.color-button.green{
+    background: green;
+}
+.fas.green{
+    color: green;
+}
+.color-button.blue{
+    background: blue;
+}
+.fas.blue{
+    color: blue;
+}
+.color-button.violet{
+    background: violet;
+}
+.fas.violet{
+    color: violet;
+}
+.color-button.light-gray{
+    background: lightslategray;
+}
+.fas.light-gray{
+    color: lightslategray;
+}
+.color-button.dark-gray{
+    background: darkslategray;
+}
+.fas.dark-gray{
+    color: darkslategray;
+}
+.color-button.black{
+    background: black;
+}
+.fas.black{
+    color: black;
+}
+.edit-character-button{
+    font-size: 30px;
+    margin: -15px 0px -15px -15px;
+}
+.view-character-button{
+    font-size: 30px;
+    margin: -15px 0px -15px -15px;
 }

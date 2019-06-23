@@ -1,0 +1,27 @@
+<div class="modal fade" id="tactician-modal" tabindex="-1" role="dialog" data-oldname="">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Give Tactician Card</h3>
+            </div>
+            <div class="modal-body">
+                <div class="tactician-card" id="modal-tact-card-image"></div>
+                <hr>
+                <p>Choose an ally:</p>
+                <select class="modal-tactician-select" id="modal-tactician-select">
+                    <option>Choose an ally...</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="tactician-dismiss-modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="tactician-submit-modal">GIVE</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$("#table-modal").on('shown.bs.modal', function() {
+    $("#modal-tactician-select").focus();
+});
+</script>
