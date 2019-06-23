@@ -4,8 +4,9 @@ $(document).ready(function() {
     var currentRound = 0;
     var jsonResponse = null;
     let gameid = $("#table-content").data("gameid");
+    var protocol = window.location.protocol;
 
-    const socket = io.connect("http://" + document.domain + ":" + location.port);
+    const socket = io.connect(protocol + "//" + document.domain + ":" + location.port);
 
     $("#navbar-brand").on('click', function(){
         console.log("socket disconnecting...");
