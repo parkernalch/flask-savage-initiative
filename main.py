@@ -228,9 +228,9 @@ def createTable():
         # return redirect(url_for("index"))
         print('GETTING CREATE TABLE')
     else:
-        print('POSTING CREATE TABLE')
+        print('POSTING CREATE TABLE:')
         party = request.get_json()['party']
-        # print(party)
+        print(party)
 
         initParty = BuildParty(party)
         init = Initiative(initParty)
