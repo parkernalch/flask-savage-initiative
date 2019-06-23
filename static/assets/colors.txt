@@ -1,0 +1,13 @@
+Primary Color: #dc5252
+Gray 1: #3b3b3b
+Gray 2: #757474
+Gray 3: #a3a9aa
+Gray 4: #bbbbbf
+Light: #ffffff
+Black: #231c1c
+
+Orange (Hesitant): #db9753
+Yellow (Tactician): #e6dc15
+Purple (Level Headed): #583c9e
+Blue (Quick): #78b3cf
+Red[primary]: #dc5252

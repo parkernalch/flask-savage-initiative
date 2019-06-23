@@ -161,3 +161,32 @@ html, body{
 .badge-hesitant{
     background-color: var(--sw-orange);
 }
+#gm-view-active-stats{
+    border-width: 2px;
+    border-color: var(--dark);
+    border-style: solid;
+    text-align: center;
+    border-radius: 5px 0px 0px 5px;
+}
+#gm-view-active-cards{
+    border-width: 2px;
+    border-color: var(--dark);
+    border-style: solid;
+    border-left: 0;
+    border-radius: 0px 5px 5px 0px;
+}
+#gm-view-on-deck-list{
+    border-width: 1px;
+    border-color: var(--dark);
+    border-style: solid;
+    margin: 0px 5px 0px 5px;
+    text-align: center;
+    border-radius: 5px;
+}
+#on-deck-list{
+    overflow-y: scroll;
+}
+#gm-next-round{
+    background-color: var(--primary-color);
+    color: var(--light);
+}
