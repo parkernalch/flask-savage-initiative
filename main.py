@@ -3,10 +3,10 @@ from cards import *
 from flask import request, jsonify, render_template, redirect, url_for, session, g
 from os import urandom
 import random, string
-from werkzeug.security import check_password_hash, generate_password_hash
+# from werkzeug.security import check_password_hash, generate_password_hash
 from flask_socketio import SocketIO, join_room, leave_room, send, emit, rooms
-from flask_sqlalchemy import SQLAlchemy
-import models as m
+# from flask_sqlalchemy import SQLAlchemy
+# import models as m
 import json
 import redis
 
@@ -16,43 +16,43 @@ app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = urandom(24)
 socketio = SocketIO(app)
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://mHCbBr0EbK:r5BX9RsjWu@remotemysql.com:3306/mHCbBr0EbK'
-db = SQLAlchemy(app)
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://mHCbBr0EbK:r5BX9RsjWu@remotemysql.com:3306/mHCbBr0EbK'
+# db = SQLAlchemy(app)
 
 r = redis.Redis(decode_responses=True)
 r.flushall()
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    req_data = request.get_json()
-    # POST
-    # check hashed password against pw database
-    # reroute to current page
-    if request.method == 'POST':
-        uname = req_data['username']
-        pwd = req_data['password']
-        user = m.User.query.filter(m.User.username == uname).first()
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     req_data = request.get_json()
+#     # POST
+#     # check hashed password against pw database
+#     # reroute to current page
+#     if request.method == 'POST':
+#         uname = req_data['username']
+#         pwd = req_data['password']
+#         user = m.User.query.filter(m.User.username == uname).first()
 
-        if check_password_hash(user.password, pwd):
-            user.authenticated = True
-            session['user'] = user.username
-            # return '{} successfully logged in as {}'.format(user.displayname, user.username)
-            responseUser = {'displayname': user.displayname, 'username': user.username }
-            return jsonify(responseUser)
-        return 'login failed'
+#         if check_password_hash(user.password, pwd):
+#             user.authenticated = True
+#             session['user'] = user.username
+#             # return '{} successfully logged in as {}'.format(user.displayname, user.username)
+#             responseUser = {'displayname': user.displayname, 'username': user.username }
+#             return jsonify(responseUser)
+#         return 'login failed'
 
-    # GET
-    # display login screen
-    return render_template("login.html")
+#     # GET
+#     # display login screen
+#     return render_template("login.html")
 
-@app.route('/logout', methods=['POST'])
-def logout():
-    print('starting logout')
-    req_data = request.get_json()
-    # uname = req_data['username']
-    session.pop('user', None)
-    return '{} successfully logged out'.format(req_data['username'])
+# @app.route('/logout', methods=['POST'])
+# def logout():
+#     print('starting logout')
+#     req_data = request.get_json()
+#     # uname = req_data['username']
+#     session.pop('user', None)
+#     return '{} successfully logged out'.format(req_data['username'])
 
 @app.route('/', methods=['GET'])
 def index():
@@ -508,15 +508,15 @@ def handle_join(data):
     # emit('message to room', {'message': '{} has joined.'.format(username), 'user': "SYS"}, room=room)
     return
 
-@socketio.on('message in room')
-def handle_message(data):
-    print(data)
-    username = data['username']
-    queriedUser = m.User.query.filter(m.User.username == username).first()
-
-    room = data['room']
-    emit('message to room', { 'message': data['message'], 'user':queriedUser.displayname }, room=room)
-    return
+# @socketio.on('message in room')
+# def handle_message(data):
+#     print(data)
+#     username = data['username']
+#     # queriedUser = m.User.query.filter(m.User.username == username).first()
+#     queriedUser = None
+#     room = data['room']
+#     emit('message to room', { 'message': data['message'], 'user':queriedUser.displayname }, room=room)
+#     return
 
 @socketio.on('leave')
 def handle_leave(data):
@@ -542,32 +542,33 @@ def handle_initiative_start(data):
     emit('start initiative', room=data['room'])
     return
 
-@socketio.on('next')
-def handle_next(data):
-    # if data has new party list (new round), then display new round
-    # if not, advance the active element to next
+# @socketio.on('next')
+# def handle_next(data):
+#     # if data has new party list (new round), then display new round
+#     # if not, advance the active element to next
     
-    queryTable = m.Gametable.query.filter(m.Gametable.id == data['id']).first()
-    # tableObject = m.tableToDict(queryTable)
-    # print(tableObject)
-    party = queryTable.characters
-    partyObject = [m.charToDict(character) for character in party]
-    print(partyObject)
-    initParty = BuildParty(partyObject)
+#     # queryTable = m.Gametable.query.filter(m.Gametable.id == data['id']).first()
+#     queryTable = None
+#     # tableObject = m.tableToDict(queryTable)
+#     # print(tableObject)
+#     party = queryTable.characters
+#     partyObject = [m.charToDict(character) for character in party]
+#     print(partyObject)
+#     initParty = BuildParty(partyObject)
 
-    initiative = Initiative(initParty)
-    initiative.NextRound()
+#     initiative = Initiative(initParty)
+#     initiative.NextRound()
 
-    state = initiative.State()
+#     state = initiative.State()
 
-    # return render_template("table_initiative.html", party=state['party'], round=state['round'], initiative=state)
-    packet = {
-        'initiative': state,
-        'round': state['round'],
-        'party': state['party']
-    }
-    emit('next round', packet, room=data['room'])
-    return
+#     # return render_template("table_initiative.html", party=state['party'], round=state['round'], initiative=state)
+#     packet = {
+#         'initiative': state,
+#         'round': state['round'],
+#         'party': state['party']
+#     }
+#     emit('next round', packet, room=data['room'])
+#     return
 
 @socketio.on('update view')
 def handle_update(data):
