@@ -1,3 +1,17 @@
+:root {
+    --primary-color: #dc5252;
+    --gray-1: #3b3b3b;
+    --gray-2: #757474;
+    --gray-3: #a3a9aa;
+    --gray-4: #bbbbbf;
+    --light: #ffffff;
+    --dark: #321c1c;
+    --sw-orange: #db9753;
+    --sw-yellow: #e6dc15;
+    --sw-purple: #583c9e;
+    --sw-blue: #78b3cf;
+}
+
 html, body{
     height: 100%;
 }
@@ -19,6 +33,7 @@ html, body{
     z-index: 2;
     -webkit-transition: top 1s;    
     transition: top 0.36s;
+    background-color: var(--primary-color);
 }
 
 .btn-circle.newchar-navbtn {
@@ -44,18 +59,18 @@ html, body{
     text-decoration: line-through;
 }
 .party-character.next{
-    color: coral;
+    color: var(--sw-orange);
 }
 .character-portrait{
     font-size: 100px;
     border-width: 1px;
-    border-color: black;
+    border-color: var(--dark);
 }
 .on-deck-list{
     list-style: none;
 }
 .on-deck-character.active{
-    color: green;
+    color: var(--primary-color);
     font-weight: bold;
 }
 
@@ -133,4 +148,16 @@ html, body{
 .view-character-button{
     font-size: 30px;
     margin: -15px 0px -15px -15px;
+}
+.badge-tactician{
+    background-color: var(--sw-yellow);
+}
+.badge-quick{
+    background-color: var(--sw-blue);
+}
+.badge-level_headed{
+    background-color:var(--sw-purple);
+}
+.badge-hesitant{
+    background-color: var(--sw-orange);
 }
