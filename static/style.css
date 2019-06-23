@@ -62,9 +62,8 @@ html, body{
     color: var(--sw-orange);
 }
 .character-portrait{
-    font-size: 100px;
-    border-width: 1px;
-    border-color: var(--dark);
+    font-size: 6em;
+    margin: -15px 0px 0px 0px;
 }
 .on-deck-list{
     list-style: none;
@@ -161,6 +160,9 @@ html, body{
 .badge-hesitant{
     background-color: var(--sw-orange);
 }
+.gm-view-header{
+    color: var(--gray-3);
+}
 #gm-view-active-stats{
     border-width: 2px;
     border-color: var(--dark);
@@ -184,9 +186,43 @@ html, body{
     border-radius: 5px;
 }
 #on-deck-list{
-    overflow-y: scroll;
+    height: inherit;
+    overflow-y: auto;
+    padding: 0;
 }
 #gm-next-round{
     background-color: var(--primary-color);
     color: var(--light);
+}
+.healthbar{
+    height: 15px;
+    width: 180px;
+    margin: 20px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--dark);
+    border-radius: 8px;
+    background-color: greenyellow;
+}
+.healthbar.one-wound{
+    background: linear-gradient(to right, goldenrod 0%, goldenrod 74.9%, transparent 75%);
+}
+.healthbar.two-wound{
+    background: linear-gradient(to right, orangered 0%, orangered 49.9%, transparent 50%);
+}
+.healthbar.three-wound{
+    background: linear-gradient(to right, darkred 0%, darkred 24.9%, transparent 25%);
+}
+.healthbar.empty{
+    background: transparent;
+}
+.attribute-box{
+    width: 60px;
+    height: 60px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--dark);
+    margin: 5px;
+    font-size: 11px;
+    color: var(--gray-4);
 }
