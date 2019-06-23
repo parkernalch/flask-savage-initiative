@@ -143,6 +143,7 @@ $("#create-table-navbutton").on("click",function(){
         dataType: 'text',
         data: JSON.stringify(data),
         success: function(response){
+            console.log(response);
             window.location.href = '/tables/gm/' + response;
             // $("html").html(response);
         },
