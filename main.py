@@ -9,7 +9,7 @@ import json
 import redis
 
 app  = flask.Flask(__name__)
-app.config['DEBUG'] = True
+app.config['DEBUG'] = False
 
 app.config['SECRET_KEY'] = urandom(24)
 socketio = SocketIO(app)
