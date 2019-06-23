@@ -1,3 +1,5 @@
+import eventlet
+eventlet.monkey_patch()
 import flask
 from cards import *
 from flask import request, jsonify, render_template, redirect, url_for, session, g

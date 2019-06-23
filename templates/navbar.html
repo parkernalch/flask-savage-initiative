@@ -134,6 +134,7 @@ $("#create-table-navbutton").on("click",function(){
     let data = {
         party: JSON.parse(localStorage.getItem("party"))
     };
+    console.log(party);
 
     $.ajax({
         url: '/tables/create',
