@@ -241,3 +241,35 @@ html, body{
 .card-fan-card:hover{
     margin-top: -10px;
 }
+#gm-utilities{
+    border-color: var(--dark);
+    border-width: 2px;
+    border-style: solid;
+    padding: 0;
+}
+#gm-utilities-list{
+    padding: 0;
+    margin: 0;
+    width: 25vw;
+}
+#utility-view{
+    border-style: solid;
+    border-color: var(--dark);
+    border-width: 1px;
+    border-left: none;
+}
+#list-of-utilities{
+    padding: 0;
+    margin: 0;
+}
+.utility-item{
+    border-color: var(--dark);
+    border-width: 1px;
+    border-style: solid;
+    padding-left: 5px;
+}
+.utility-item.active{
+    border-right: none;
+    font-weight: bold;
+    color: var(--primary-color);
+}

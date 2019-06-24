@@ -344,4 +344,11 @@ $(document).ready(function() {
         socket.emit("advance round", activeIndex);
         // AdvanceRound();
     });
+
+    $(".utility-item").on('click', function(){
+        for(var child of $("#list-of-utilities").children()){
+            $(child).removeClass("active");
+        }
+        $(this).addClass("active");
+    });
 });
