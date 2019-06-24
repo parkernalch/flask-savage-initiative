@@ -10,13 +10,12 @@ import json
 import redis
 
 app  = flask.Flask(__name__)
-app.config['DEBUG'] = True
+app.config['DEBUG'] = False 
 
 app.config['SECRET_KEY'] = urandom(24)
 socketio = SocketIO(app)
 
-# r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
-r = redis.Redis(decode_responses=True)
+r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 r.flushall()
 
 @app.route('/', methods=['GET'])
