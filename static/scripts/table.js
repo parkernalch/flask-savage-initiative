@@ -163,6 +163,7 @@ $(document).ready(function() {
 
     function LoadInitiativeCards(character){
         $("#active-cards-in-hand").empty();
+        $("#active-cards-in-hand").addClass("card-fan");
         for(var card of character.cards.hand){
             let c = $("<button/>");
             c.addClass("initiative-card");
@@ -173,16 +174,35 @@ $(document).ready(function() {
         }
     }
 
+    function addTacticianEvent(){
+        $(".tactician-card").on('click', function(){
+            let card = $(this).attr("cardname");
+            $("#modal-tact-card-image").html("<img src='../../../static/assets/" + card + ".png' width='64' height='96'>")
+            $("#modal-tactician-select").empty();
+            $("#modal-tactician-select").append("<option>Choose an ally...</option>");
+            for(var member of jsonResponse.party){
+                $("#modal-tactician-select").append("<option>" + member.name + "</option>")
+            }
+            $("#modal-tactician-select").attr("origin", $(this).attr("character"));
+            $("#modal-tactician-select").attr("card", card);
+            $("#tactician-modal").modal();
+        });
+    }
+
     function LoadTacticianCards(character){
         $("#tactician-cards-in-hand").empty();
+        $("#tactician-cards-in-hand").addClass("card-fan");
         for(var card of character.cards.tactician){
             let c = $("<button/>");
             c.addClass("initiative-card");
             c.addClass("btn btn-default tactician-card");
+            c.addClass("card-fan-card");
             c.attr("cardname", card);
+            c.attr("character", character.name);
             c.html("<img src='../../../static/assets/" + card +  ".png' width='64' height='96'>")
             $("#tactician-cards-in-hand").append(c);
         }
+        addTacticianEvent();
     }
 
     function PopulatePlayerHand(character){
@@ -296,6 +316,7 @@ $(document).ready(function() {
                     // console.log("emitting update view");
                     // socket.emit("update view", JSON.stringify(jsonResponse));
                     // fetchThisRound();
+                    $("#tactician-modal").modal('hide');
                     socket.emit("refresh view");
                 }
             },
@@ -323,5 +344,4 @@ $(document).ready(function() {
         socket.emit("advance round", activeIndex);
         // AdvanceRound();
     });
-
 });
