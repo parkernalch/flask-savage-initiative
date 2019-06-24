@@ -226,3 +226,18 @@ html, body{
     font-size: 11px;
     color: var(--gray-4);
 }
+.card-fan{
+    text-align: center;
+    display: flex;
+    margin-left: 60px;
+}
+.card-fan-card{
+    display: block;
+    margin-left: -60px;
+    margin-top: 0px;
+    transition-property: margin-left, margin-top;
+    transition-duration: 0.25s;
+}
+.card-fan-card:hover{
+    margin-top: -10px;
+}
