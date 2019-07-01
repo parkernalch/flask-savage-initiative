@@ -8,15 +8,29 @@ import random, string
 from flask_socketio import SocketIO, join_room, leave_room, send, emit, rooms
 import json
 import redis
+import sys
 
 app  = flask.Flask(__name__)
-app.config['DEBUG'] = True
 
 app.config['SECRET_KEY'] = urandom(24)
 socketio = SocketIO(app)
 
+if (len(sys.argv) <= 1):
+    app.config['DEBUG'] = False
+    r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
+    print("running prod")
+else:
+    if(sys.argv[1] == 'dev'):
+        app.config['DEBUG'] = True
+        r = redis.Redis(decode_responses=True)
+        print("running dev")
+    else:
+        print("running prod")
+        r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
+        app.config['DEBUG'] = False
+
 # r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
-r = redis.Redis(decode_responses=True)
+# r = redis.Redis(decode_responses=True)
 r.flushall()
 
 @app.route('/', methods=['GET'])
