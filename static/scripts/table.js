@@ -363,9 +363,9 @@ $(document).ready(function() {
         let data = {
             equation: eq
         };
-
+        let proto = location.protocol;
         $.ajax({
-            url: "http://apidice.herokuapp.com/roll",
+            url: proto + "//apidice.herokuapp.com/roll",
             method: "POST",
             data: JSON.stringify(data),
             contentType: 'application/json',
