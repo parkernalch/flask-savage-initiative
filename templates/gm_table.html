@@ -50,14 +50,45 @@
 <div class="container d-flex" id="gm-utilities">
     <div id="gm-utilities-list">
         <ul id="list-of-utilities">
-            <div class="utility-item active">Table Overview</div>
-            <div class="utility-item">Dice Roller</div>
-            <div class="utility-item">Power Lookup</div>
-            <div class="utility-item">Adventure Cards</div>
-            <div class="utility-item">Rule Lookup</div>
+            <button class="utility-item active" data-toggle="collapse" href="#table-overview" aria-expanded="false" aria-controls="table-overview">Table Overview</button>
+            <button class="utility-item" data-toggle="collapse" href="#roller-pane" aria-expanded="false" aria-controls="roller-pane">Dice Roller</button>
+            <button class="utility-item" data-toggle="collapse" href="#power-lookup" aria-expanded="false" aria-controls="power-lookup">Power Lookup</button>
+            <button class="utility-item" data-toggle="collapse" href="#adventure-cards" aria-expanded="false" aria-controls="adventure-cards">Adventure Cards</button>
+            <button class="utility-item" data-toggle="collapse" href="#rule-lookup" aria-expanded="false" aria-controls="rule-lookup">Rule Lookup</button>
         </ul>
     </div>
     <div class="container p-2" id="utility-view">
+        
+        <div class="utility-pane collapse" id="roller-pane">
+            <div class="d-flex" style="text-align:center">
+                <form class="p-2" id="rollerform">
+                    <div class="form-group">
+                        <label for="eqinput">Equation:</label>
+                        <input type="text" id="eqinput">
+                    </div>
+                    <button class="btn btn-primary" type="submit">ROLL</button>
+                </form>
+                <div class="container p-2" style="border: dashed var(--primary) 1px">
+                    <h1 id="rolleroutput" style="padding-top: 20px"></h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="utility-pane collapse" id="table-overview">
+
+        </div>
+
+        <div class="utility-pane collapse" id="power-lookup">
+
+        </div>
+
+        <div class="utility-pane collapse" id="adventure-cards">
+
+        </div>
+
+        <div class="utility-pane collapse" id="rule-lookoup">
+
+        </div>
 
     </div>
 </div>

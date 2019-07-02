@@ -351,4 +351,31 @@ $(document).ready(function() {
         }
         $(this).addClass("active");
     });
+
+    $("#rollerform").submit(function(event){
+        event.preventDefault();
+        let eq = $("#eqinput").val();
+
+        if(eq === ""){
+            return
+        }
+
+        let data = {
+            equation: eq
+        };
+
+        $.ajax({
+            url: "http://apidice.herokuapp.com/roll",
+            method: "POST",
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            success: function(response){
+                // alert(response);
+                $("#rolleroutput").html(response);
+            },
+            error: function(xhr, err, status){
+                console.log(xhr, err, status);
+            }
+        });
+    })
 });
