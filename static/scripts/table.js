@@ -370,8 +370,8 @@ $(document).ready(function() {
             data: JSON.stringify(data),
             contentType: 'application/json',
             success: function(response){
-                // alert(response);
-                $("#rolleroutput").html(response);
+                console.log(response);
+                $("#rolleroutput").html(response.result);
             },
             error: function(xhr, err, status){
                 console.log(xhr, err, status);
