@@ -14,6 +14,7 @@ app  = flask.Flask(__name__)
 
 app.config['SECRET_KEY'] = urandom(24)
 socketio = SocketIO(app)
+r = None
 
 if (len(sys.argv) <= 1):
     app.config['DEBUG'] = False
