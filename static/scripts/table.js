@@ -107,19 +107,29 @@ $(document).ready(function() {
                 LoadTacticianCards(character);
             }
             $("#on-deck-list").append(newchar);
+
+            $("#table-overview-list").append(`<span>${character.name}: [${character.cards['hand']}] | </span>`);
+
         }
+
     }
 
+    $.ajax({
+        url: 'https://apidice.herokuapp.com/ping',
+        method: 'GET',
+        contentType: 'text/html',
+        success: function(response) {
+            if(response === 'pong'){
+                $("#roll-api-submit").attr('disabled', false);
+                console.log("Dice API is active");
+            }
+        },
+        error: function(xhr, err, status) {
+            console.log(err);
+        }   
+    });
+
     function GetPortrait(character){
-        // val = null;
-        // for(let key of Object.keys(characterPortraits)){
-        //     if(key == character.name.toLowerCase()){
-        //         val = characterPortraits[key];
-        //     }
-        // }
-        // // $("#character-portrait").html("<img src='" + url + "' width='100' height='100'>");
-        // let color = val.split(' ')[0];
-        // let icon = val.split(' ')[1];
 
         let color = character.color;
         let icon = character.icon;
@@ -371,11 +381,29 @@ $(document).ready(function() {
             contentType: 'application/json',
             success: function(response){
                 console.log(response);
-                $("#rolleroutput").html(response.result);
+                // $("#rolleroutput").html(response.result);
+                $("#roll-api-container").empty();               
+                for(var key of Object.keys(response.dice)){
+                    console.log(key);
+                    console.log(response.dice[key]);
+                    for(var die of response.dice[key]){
+                        let die_display = $("<span>");
+                        let class_type = key.split('d')[1];
+                        die_display.addClass(`d${class_type}`);
+                        die_display.addClass('die-roll');
+                        die_display.html(die);
+                        console.log(die_display);
+                        $("#roll-api-container").append(die_display);
+                    }
+
+                    $("#roll-api-container").append(`<div> = <strong>${response.result}</strong></div>`)
+                }
             },
             error: function(xhr, err, status){
                 console.log(xhr, err, status);
             }
         });
-    })
+    });
+
+   // $("#table-overview").html();
 });
