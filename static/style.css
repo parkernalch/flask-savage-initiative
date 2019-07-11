@@ -10,6 +10,12 @@
     --sw-yellow: #e6dc15;
     --sw-purple: #583c9e;
     --sw-blue: #78b3cf;
+    --svg-d4: url(assets/die_d4.svg);
+    --svg-d6: url(assets/die_d6.svg);
+    --svg-d8: url(assets/die_d8.svg);
+    --svg-d10: url(assets/die_d10.svg);
+    --svg-d12: url(assets/die_d12.svg);
+    --svg-d20: url(assets/die_d20.svg);
 }
 
 html, body{
@@ -274,4 +280,50 @@ html, body{
     border-right: none;
     font-weight: bold;
     color: var(--primary-color);
+}
+.die-roll {
+    background: var(--svg-d6) no-repeat center center;
+    background-size: contain;
+    font-size: 20px;
+    font-weight: bold;
+    opacity: 0.5;
+    padding: 10px;
+    width: 50px;
+    height: 50px;
+    transition: all 0.3s;
+}
+.die-roll:hover{
+    opacity: 1;
+}
+.die-roll.d4 {
+    background: var(--svg-d4) no-repeat center center;
+    background-size: contain;
+}
+.die-roll.d6 {
+    background: var(--svg-d6) no-repeat center center;
+    background-size: contain;
+}
+.die-roll.d8 {
+    background: var(--svg-d8) no-repeat center center;
+    background-size: contain;
+}
+.die-roll.d10 {
+    background: var(--svg-d10) no-repeat center center;
+    background-size: contain;
+}
+.die-roll.d12 {
+    background: var(--svg-d12) no-repeat center center;
+    background-size: contain;
+}
+.die-roll.d20 {
+    background: var(--svg-d20) no-repeat center center;
+    background-size: contain;
+}
+.die-roll > span {
+    opacity: 1;
+}
+.roll-result-div {
+    font-size: 30px;
+    font-weight: bold;
+    font-family: sans-serif;
 }

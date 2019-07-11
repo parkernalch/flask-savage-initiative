@@ -391,13 +391,12 @@ $(document).ready(function() {
                         let class_type = key.split('d')[1];
                         die_display.addClass(`d${class_type}`);
                         die_display.addClass('die-roll');
-                        die_display.html(die);
+                        die_display.html(`<span>${die}</span>`);
                         console.log(die_display);
                         $("#roll-api-container").append(die_display);
                     }
-
-                    $("#roll-api-container").append(`<div> = <strong>${response.result}</strong></div>`)
                 }
+                $("#roll-api-container").append(`<div class="roll-result-div"> = <strong>${response.result}</strong></div>`)
             },
             error: function(xhr, err, status){
                 console.log(xhr, err, status);
