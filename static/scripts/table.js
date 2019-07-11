@@ -380,23 +380,38 @@ $(document).ready(function() {
             data: JSON.stringify(data),
             contentType: 'application/json',
             success: function(response){
-                console.log(response);
-                // $("#rolleroutput").html(response.result);
-                $("#roll-api-container").empty();               
-                for(var key of Object.keys(response.dice)){
-                    console.log(key);
-                    console.log(response.dice[key]);
-                    for(var die of response.dice[key]){
-                        let die_display = $("<span>");
-                        let class_type = key.split('d')[1];
-                        die_display.addClass(`d${class_type}`);
-                        die_display.addClass('die-roll');
-                        die_display.html(`<span>${die}</span>`);
-                        console.log(die_display);
-                        $("#roll-api-container").append(die_display);
+                $("#roll-result-header").html(response.equation);
+                $("#roll-result-dice-tray").empty();
+                $("#roll-result-total").empty();
+                var dice = [];
+                var dice_ct = Object.keys(response.dice)
+                    .map((key, ind) => response.dice[key].length)
+                    .reduce((acc, len) => acc + len, 0);
+                // console.log(dice_ct);
+                if(dice_ct < 30) {
+                    for(var key of Object.keys(response.dice)){
+                        for(var die of response.dice[key]){
+                            let die_display = $("<span>");
+                            let class_type = key.split('d')[1];
+                            die_display.addClass(`d${class_type}`);
+                            die_display.addClass('die-roll');
+                            die_display.addClass('col-2');
+                            die_display.addClass('hidden');
+                            die_display.html(`<span>${die}</span>`);
+                            $("#roll-result-dice-tray").append(die_display);
+                            dice.push(die_display);
+                        }
                     }
+                } else {
+                    $("#roll-result-dice-tray").append("<p style='color: red'>too many dice to display </p>");
                 }
-                $("#roll-api-container").append(`<div class="roll-result-div"> = <strong>${response.result}</strong></div>`)
+                var waiter = setTimeout(() => {
+                    for(let d of dice){
+                        $(d).removeClass('hidden');
+                    }
+                }, 100);
+                // $("#roll-api-container").append(`<div class="roll-result-div"> = <strong>${response.result}</strong></div>`)
+                $("#roll-result-total").append(`<div class="roll-result-div"> = <strong>${response.result}</strong></div>`);
             },
             error: function(xhr, err, status){
                 console.log(xhr, err, status);
