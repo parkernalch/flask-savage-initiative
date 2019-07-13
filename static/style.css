@@ -297,6 +297,7 @@ html, body{
 .die-roll.hidden {
     opacity: 0;
     left: -10px;
+    transform: rotateZ(30deg);
 }
 .die-roll:hover{
     opacity: 1;
